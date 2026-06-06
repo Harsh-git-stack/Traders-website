@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | NexfordMarket</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+  <main class="auth-shell">
+    <section class="auth-scene">
+      <a class="auth-brand" href="index.html"><span class="auth-mark">N</span><span>NexfordMarket</span></a>
+      <div class="auth-copy"><h1>Welcome back to your market workspace.</h1><p>Log in to view your private dashboard and account profile.</p></div>
+      <div class="auth-proof"><span>JWT access token</span><span>Bearer authorization</span><span>Protected dashboard</span></div>
+    </section>
+    <section class="auth-main">
+      <div class="auth-card">
+        <h2>Log in</h2>
+        <p>Enter the account details you used during signup.</p>
+        <form class="auth-form" id="loginForm">
+          <label>Email address<input type="email" name="email" placeholder="name@example.com" required></label>
+          <label>Password<input type="password" name="password" placeholder="Your password" required></label>
+          <div class="auth-row"><label><input type="checkbox" name="remember">Remember me</label><a class="auth-link" href="#">Forgot password?</a></div>
+          <button class="auth-button" type="submit">Log in</button>
+          <p class="auth-message" id="authMessage" role="status"></p>
+        </form>
+        <p class="auth-switch">New here? <a href="signup.html">Create an account</a></p>
+      </div>
+    </section>
+  </main>
+  <script src="auth.js"></script>
+</body>
+</html>

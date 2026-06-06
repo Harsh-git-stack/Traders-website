@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up | NexfordMarket</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+  <main class="auth-shell">
+    <section class="auth-scene">
+      <a class="auth-brand" href="index.html"><span class="auth-mark">N</span><span>NexfordMarket</span></a>
+      <div class="auth-copy"><h1>Create your secure trading profile.</h1><p>Register once, then use your login pass to access private account data.</p></div>
+      <div class="auth-proof"><span>Hashed password</span><span>Private profile</span><span>Role-based access</span></div>
+    </section>
+    <section class="auth-main">
+      <div class="auth-card">
+        <h2>Create account</h2>
+        <p>Create a DEMO or LIVE account using the existing MongoDB backend.</p>
+        <form class="auth-form" id="signupForm">
+          <label>Full name<input type="text" name="name" placeholder="Your name" minlength="2" required></label>
+          <label>Email address<input type="email" name="email" placeholder="name@example.com" required></label>
+          <label>Account type<select name="accountType" required><option value="DEMO">Demo account</option><option value="LIVE">Live account</option></select></label>
+          <label class="auth-check"><input type="checkbox" name="swap" checked>Enable swap value</label>
+          <label>Password<input type="password" name="password" placeholder="12 chars, A-z, number, special" minlength="12" required></label>
+          <label>Confirm password<input type="password" name="confirmPassword" placeholder="Repeat password" minlength="12" required></label>
+          <button class="auth-button" type="submit">Create account</button>
+          <p class="auth-message" id="authMessage" role="status"></p>
+        </form>
+        <p class="auth-switch">Already registered? <a href="login.html">Log in</a></p>
+      </div>
+    </section>
+  </main>
+  <script src="auth.js"></script>
+</body>
+</html>
