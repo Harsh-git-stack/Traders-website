@@ -34,7 +34,7 @@ body {
 body.dark {
   --bg: #0e1311;
   --surface: #161d1a;
-  --ink: #f3f8f5;
+  --ink: #f8f7f3;
   --muted: #a2b1ab;
   --line: #26332e;
   --shadow: 0 24px 70px rgba(0, 0, 0, 0.36);
@@ -49,7 +49,7 @@ body.dark {
   width: 260px;
   height: 260px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(19, 185, 143, 0.16), transparent 64%);
+  background: radial-gradient(circle, rgba(185, 235, 86, 0.30) 0%, rgba(32, 215, 167, 0.22) 44%, transparent 70%);
   opacity: 0;
   transform: translate3d(-50%, -50%, 0);
   pointer-events: none;
@@ -2211,7 +2211,7 @@ body.dark .theme-dot {
 }
 
 .site-footer {
-  padding: 64px 0 28px;
+  padding: 72px 0 30px;
 }
 
 .footer-grid {
@@ -2229,7 +2229,8 @@ body.dark .theme-dot {
 
 .footer-col {
   display: grid;
-  gap: 10px;
+  align-content: start;
+  gap: 12px;
 }
 
 .footer-col h3,
@@ -2317,6 +2318,142 @@ body.dark .theme-dot {
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
+}
+
+.broker-footer {
+  display: grid;
+  gap: 34px;
+}
+
+.footer-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(340px, 0.85fr);
+  gap: 76px;
+  align-items: start;
+}
+
+.footer-left {
+  display: grid;
+  gap: 30px;
+}
+
+.footer-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  width: fit-content;
+  font-size: clamp(32px, 4.4vw, 58px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
+  color: #eaf2ef;
+}
+
+.footer-logo-mark {
+  width: 66px;
+  height: 66px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: #061310;
+  background: var(--primary);
+  font-size: 38px;
+  font-weight: 900;
+}
+
+.footer-columns {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  gap: clamp(34px, 5vw, 76px);
+}
+
+.footer-right {
+  display: grid;
+  justify-items: end;
+  gap: 44px;
+  padding-top: 22px;
+}
+
+.partners-line {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-weight: 800;
+}
+
+.partner-crest {
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(234, 242, 239, 0.24);
+  border-radius: 50%;
+  color: #061310;
+  background: #eaf2ef;
+  font-weight: 900;
+}
+
+.trust-badges {
+  display: flex;
+  gap: 28px;
+}
+
+.trust-badges div {
+  position: relative;
+  width: 104px;
+  min-height: 112px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 6px;
+  padding: 14px 10px;
+  clip-path: polygon(50% 0, 92% 18%, 92% 72%, 50% 100%, 8% 72%, 8% 18%);
+  background: color-mix(in srgb, var(--primary) 42%, #16312d);
+  text-align: center;
+}
+
+.trust-badges div:nth-child(2) {
+  background: color-mix(in srgb, var(--blue) 54%, #102541);
+}
+
+.trust-badges span {
+  color: rgba(234, 242, 239, 0.78);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.trust-badges strong {
+  color: #eaf2ef;
+  font-size: 16px;
+}
+
+.footer-social {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-weight: 800;
+}
+
+.footer-social .social-row {
+  margin-top: 0;
+}
+
+.footer-social .social-row a {
+  border-radius: 50%;
+  color: #061310;
+  background: #eaf2ef;
+  border-color: transparent;
+}
+
+.customer-service {
+  margin: 0;
+  color: #eaf2ef;
+  font-weight: 800;
+}
+
+.customer-service a {
+  color: var(--primary);
 }
 
 .reveal {
@@ -2448,6 +2585,18 @@ body.dark .theme-dot {
 
   .footer-bottom {
     flex-direction: column;
+  }
+
+  .footer-main {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-right {
+    justify-items: start;
+  }
+
+  .footer-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -2614,6 +2763,30 @@ body.dark .theme-dot {
 
   .newsletter form {
     grid-template-columns: 1fr;
+  }
+
+  .footer-logo {
+    font-size: 34px;
+  }
+
+  .footer-logo-mark {
+    width: 52px;
+    height: 52px;
+    font-size: 30px;
+  }
+
+  .footer-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .trust-badges,
+  .footer-social {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .footer-social .social-row {
+    flex-wrap: wrap;
   }
 }
 

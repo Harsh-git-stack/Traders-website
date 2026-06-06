@@ -75,19 +75,20 @@ if (localStorage.getItem("nexford-theme") === "dark") {
   document.body.classList.add("dark");
 }
 
-const markets = [
-  ["GBP/USD", "1.2704", "+0.18%"],
-  ["XAU/USD", "2368.90", "+0.42%"],
-  ["NAS100", "18942.5", "+0.31%"],
-  ["USOIL", "78.21", "-0.16%"],
-  ["BTC/USD", "68240", "+1.28%"],
-  ["GBP/JPY", "198.44", "+0.09%"],
-  ["GER40", "18420.2", "-0.11%"],
-  ["AUD/USD", "0.6642", "+0.04%"]
-];
+const markets = [];
+// const markets = [
+//   ["GBP/USD", "1.2704", "+0.18%"],
+//   ["XAU/USD", "2368.90", "+0.42%"],
+//   ["NAS100", "18942.5", "+0.31%"],
+//   ["USOIL", "78.21", "-0.16%"],
+//   ["BTC/USD", "68240", "+1.28%"],
+//   ["GBP/JPY", "198.44", "+0.09%"],
+//   ["GER40", "18420.2", "-0.11%"],
+//   ["AUD/USD", "0.6642", "+0.04%"]
+// ];
 
 const tickerTrack = document.querySelector("#tickerTrack");
-if (tickerTrack) {
+if (tickerTrack && markets.length) {
   const tickerItems = [...markets, ...markets].map(([symbol, price, change]) => {
     const item = document.createElement("div");
     item.className = "ticker-item";
@@ -98,16 +99,17 @@ if (tickerTrack) {
   tickerItems.forEach((item) => tickerTrack.appendChild(item));
 }
 
-const screenerData = [
-  { symbol: "GBP/USD", name: "Pound Dollar", type: "forex", price: "1.2704", change: "+0.18%", spread: "0.1", bars: [36, 68, 52, 80, 64, 92] },
-  { symbol: "GBP/JPY", name: "Pound Yen", type: "forex", price: "198.44", change: "+0.09%", spread: "0.7", bars: [48, 58, 72, 62, 78, 68] },
-  { symbol: "XAU/USD", name: "Gold", type: "metals", price: "2368.90", change: "+0.42%", spread: "1.4", bars: [42, 76, 58, 88, 72, 94] },
-  { symbol: "XAG/USD", name: "Silver", type: "metals", price: "30.82", change: "-0.12%", spread: "1.9", bars: [72, 58, 62, 44, 50, 38] },
-  { symbol: "NAS100", name: "US Tech 100", type: "indices", price: "18942.5", change: "+0.31%", spread: "0.6", bars: [46, 64, 82, 70, 88, 96] },
-  { symbol: "GER40", name: "Germany 40", type: "indices", price: "18420.2", change: "-0.11%", spread: "0.9", bars: [84, 72, 66, 58, 48, 42] },
-  { symbol: "BTC/USD", name: "Bitcoin", type: "crypto", price: "68240", change: "+1.28%", spread: "14", bars: [34, 58, 46, 82, 74, 98] },
-  { symbol: "ETH/USD", name: "Ethereum", type: "crypto", price: "3820", change: "-0.24%", spread: "5.2", bars: [76, 70, 54, 62, 48, 44] }
-];
+const screenerData = [];
+// const screenerData = [
+//   { symbol: "GBP/USD", name: "Pound Dollar", type: "forex", price: "1.2704", change: "+0.18%", spread: "0.1", bars: [36, 68, 52, 80, 64, 92] },
+//   { symbol: "GBP/JPY", name: "Pound Yen", type: "forex", price: "198.44", change: "+0.09%", spread: "0.7", bars: [48, 58, 72, 62, 78, 68] },
+//   { symbol: "XAU/USD", name: "Gold", type: "metals", price: "2368.90", change: "+0.42%", spread: "1.4", bars: [42, 76, 58, 88, 72, 94] },
+//   { symbol: "XAG/USD", name: "Silver", type: "metals", price: "30.82", change: "-0.12%", spread: "1.9", bars: [72, 58, 62, 44, 50, 38] },
+//   { symbol: "NAS100", name: "US Tech 100", type: "indices", price: "18942.5", change: "+0.31%", spread: "0.6", bars: [46, 64, 82, 70, 88, 96] },
+//   { symbol: "GER40", name: "Germany 40", type: "indices", price: "18420.2", change: "-0.11%", spread: "0.9", bars: [84, 72, 66, 58, 48, 42] },
+//   { symbol: "BTC/USD", name: "Bitcoin", type: "crypto", price: "68240", change: "+1.28%", spread: "14", bars: [34, 58, 46, 82, 74, 98] },
+//   { symbol: "ETH/USD", name: "Ethereum", type: "crypto", price: "3820", change: "-0.24%", spread: "5.2", bars: [76, 70, 54, 62, 48, 44] }
+// ];
 
 const screenerGrid = document.querySelector("#screenerGrid");
 const marketSearch = document.querySelector("#marketSearch");
@@ -190,6 +192,7 @@ if (canHover) {
 }
 
 setInterval(() => {
+  if (!markets.length) return;
   document.querySelectorAll(".ticker-item").forEach((item, index) => {
     if (index % 2 !== 0) return;
     const price = item.querySelector("span");
