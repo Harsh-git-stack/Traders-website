@@ -8,3 +8,6 @@
 ::1 - - [06/Jun/2026 14:53:00] "GET /login.html HTTP/1.1" 200 -
 ::1 - - [06/Jun/2026 14:53:01] "GET /auth.css HTTP/1.1" 200 -
 ::1 - - [06/Jun/2026 14:53:01] "GET /auth.js HTTP/1.1" 200 -
+::1 - - [06/Jun/2026 16:35:12] "GET /signup.html HTTP/1.1" 200 -
+::1 - - [06/Jun/2026 16:35:12] "GET /auth.css HTTP/1.1" 304 -
+::1 - - [06/Jun/2026 16:35:12] "GET /auth.js HTTP/1.1" 304 -

@@ -1,0 +1,13 @@
+{
+  "name": "nexfordmarket-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static frontend server for the NexfordMarket traders website.",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
