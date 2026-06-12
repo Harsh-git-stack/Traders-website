@@ -1,4 +1,7 @@
-const API_BASE_URL = "http://localhost:8084/traders-backend";
+const API_BASE_URL = window.NEXFORD_API_BASE_URL ||
+  (["localhost", "127.0.0.1"].includes(window.location.hostname)
+    ? "http://localhost:8084/traders-backend"
+    : `${window.location.origin}/traders-backend`);
 const TOKEN_KEY = "nexford-access-token";
 const USER_KEY = "nexford-user";
 
