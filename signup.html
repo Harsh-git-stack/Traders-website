@@ -28,7 +28,12 @@
           <label class="auth-check"><input type="checkbox" name="swap" checked>Enable swap value</label>
           <label>Password<input type="password" name="password" placeholder="12 chars, A-z, number, special" minlength="12" required></label>
           <label>Confirm password<input type="password" name="confirmPassword" placeholder="Repeat password" minlength="12" required></label>
-          <button class="auth-button" type="submit">Create account</button>
+          <label id="otpField" hidden>Email OTP<input type="text" name="otp" placeholder="6 digit code" inputmode="numeric" minlength="6" maxlength="6"></label>
+          <div class="otp-status" id="otpStatus" hidden>
+            <span id="otpTimer">Enter OTP within 05:00</span>
+            <button class="auth-link-button" id="resendOtpButton" type="button" hidden>Resend OTP</button>
+          </div>
+          <button class="auth-button" id="signupButton" type="submit">Create account</button>
           <p class="auth-message" id="authMessage" role="status"></p>
         </form>
         <p class="auth-switch">Already registered? <a href="login.html">Log in</a></p>

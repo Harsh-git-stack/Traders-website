@@ -3,81 +3,724 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Client Area | NexfordMarket</title>
+  <title>Trader Area | NexfordMarket</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="auth.css">
 </head>
 <body>
-  <main class="dashboard-shell">
-    <div class="dashboard-wrap">
-      <nav class="dashboard-nav">
-        <a class="auth-brand" href="index.html"><span class="auth-mark">N</span><span>NexfordMarket</span></a>
-        <div>
-          <a href="index.html">Website</a>
-          <button id="refreshButton" type="button">Refresh</button>
-          <button id="logoutButton" type="button">Log out</button>
+  <main class="dashboard-shell portal-shell">
+    <aside class="portal-sidebar">
+      <a class="portal-logo" href="index.html"><span class="auth-mark">N</span><span>NexfordMarket</span></a>
+      <nav class="portal-menu" aria-label="Client area navigation">
+        <button class="dash-tab active" type="button" data-view="overviewView"><span>DB</span> Dashboard</button>
+        <button class="portal-dropdown-toggle" type="button" data-menu="adminMenu"><span>AD</span> My Admin <b>v</b></button>
+        <div class="portal-submenu" id="adminMenu" hidden>
+          <button class="dash-tab" type="button" data-view="profileView">Profile Overview</button>
+          <button class="dash-tab" type="button" data-view="settingsView">Settings</button>
+          <button class="dash-tab" type="button" data-view="verificationView">Verification</button>
+          <button class="dash-tab" type="button" data-view="bankingView">Banking</button>
+          <button class="dash-tab" type="button" data-view="reportsView">UPI</button>
         </div>
+
+        <button class="portal-dropdown-toggle" type="button" data-menu="tradingMenu"><span>TA</span> Trading Accounts <b>v</b></button>
+        <div class="portal-submenu" id="tradingMenu" hidden>
+          <button class="dash-tab" type="button" data-view="tradingAccountsView">Open Demo Account</button>
+          <button class="dash-tab" type="button" data-view="tradingAccountsView">Open Live Account</button>
+          <button class="dash-tab" type="button" data-view="tradingAccountsView">Trading Account Settings</button>
+        </div>
+
+        <button class="portal-dropdown-toggle" type="button" data-menu="depositMenu"><span>DP</span> Deposit <b>v</b></button>
+        <div class="portal-submenu" id="depositMenu" hidden>
+          <button class="dash-tab" type="button" data-view="bankingView">Local Bank</button>
+          <button class="dash-tab" type="button" data-view="upiAutoView">UPI-Auto</button>
+          <button class="dash-tab" type="button" data-view="cryptoChillView">CryptoChill</button>
+          <button class="dash-tab" type="button" data-view="myFatoorahView">MyFatoorah Deposit</button>
+          <button class="dash-tab" type="button" data-view="cheezUpiView">Cheez-UPI</button>
+          <button class="dash-tab" type="button" data-view="spayzView">Spayz Deposit</button>
+          <button class="dash-tab" type="button" data-view="cashDepositView">Cash Deposit</button>
+          <button class="dash-tab" type="button" data-view="monumpayView">Monumpay Deposit</button>
+        </div>
+
+        <button class="portal-dropdown-toggle" type="button" data-menu="withdrawMenu"><span>WD</span> Withdraw <b>v</b></button>
+        <div class="portal-submenu" id="withdrawMenu" hidden>
+          <button class="dash-tab" type="button" data-view="bankWithdrawView">Bank Withdraw</button>
+          <button class="dash-tab" type="button" data-view="cheezeePayWithdrawView">CheezeePay Withdraw</button>
+          <button class="dash-tab" type="button" data-view="spayzWithdrawView">Spayz Withdraw</button>
+          <button class="dash-tab" type="button" data-view="upiWithdrawView">UPI Withdraw</button>
+          <button class="dash-tab" type="button" data-view="okPayWithdrawView">OkPay Withdraw</button>
+          <button class="dash-tab" type="button" data-view="cryptoChillWithdrawView">CryptoChill Withdraw</button>
+          <button class="dash-tab" type="button" data-view="monumpayWithdrawView">Monumpay Withdraw</button>
+          <button class="dash-tab" type="button" data-view="cashWithdrawView">Cash Withdraw</button>
+        </div>
+
+        <button class="portal-dropdown-toggle" type="button" data-menu="transferMenu"><span>TR</span> Transfer <b>v</b></button>
+        <div class="portal-submenu" id="transferMenu" hidden>
+          <button class="dash-tab" type="button" data-view="walletToAccountView">Wallet To Account</button>
+          <button class="dash-tab" type="button" data-view="accountToWalletView">Account To Wallet</button>
+          <button class="dash-tab" type="button" data-view="traderToTraderView">Trader To Trader</button>
+        </div>
+
+        <button class="portal-dropdown-toggle" type="button" data-menu="reportsMenu"><span>RP</span> Reports <b>v</b></button>
+        <div class="portal-submenu" id="reportsMenu" hidden>
+          <button class="dash-tab" type="button" data-view="reportsView">Deposit History</button>
+          <button class="dash-tab" type="button" data-view="reportsView">Withdraw History</button>
+          <button class="dash-tab" type="button" data-view="reportsView">Transfer History</button>
+          <button class="dash-tab" type="button" data-view="reportsView">Trading History</button>
+          <button class="dash-tab" type="button" data-view="reportsView">UPI Reports</button>
+        </div>
+
+        <button class="portal-dropdown-toggle" type="button" data-menu="supportMenu"><span>SP</span> Support <b>v</b></button>
+        <div class="portal-submenu" id="supportMenu" hidden>
+          <button class="dash-tab" type="button" data-view="supportView">Create Ticket</button>
+          <button class="dash-tab" type="button" data-view="supportView">Ticket List</button>
+        </div>
+
+        <button class="portal-dropdown-toggle" type="button" data-menu="copyMenu"><span>CT</span> Copy Trading <b>v</b></button>
+        <div class="portal-submenu" id="copyMenu" hidden>
+          <button class="dash-tab" type="button" data-view="copyTradingView">Provider</button>
+          <button class="dash-tab" type="button" data-view="copyTradingView">Follower</button>
+          <button class="dash-tab" type="button" data-view="copyTradingView">Leaderboard</button>
+          <button class="dash-tab" type="button" data-view="copyTradingView">Contest</button>
+        </div>
+
+        <button class="portal-dropdown-toggle" type="button" data-menu="pammMenu"><span>PM</span> Pamm <b>v</b></button>
+        <div class="portal-submenu" id="pammMenu" hidden>
+          <button class="dash-tab" type="button" data-view="pammView">Master</button>
+          <button class="dash-tab" type="button" data-view="pammView">Investor</button>
+          <button class="dash-tab" type="button" data-view="pammView">Leaderboard</button>
+        </div>
+        <div class="portal-menu-label">Social Trade</div>
+        <button class="portal-dropdown-toggle" type="button" data-menu="socialMenu"><span>ST</span> Social Trading <b>v</b></button>
+        <div class="portal-submenu" id="socialMenu" hidden>
+          <button class="dash-tab" type="button" data-view="socialTradingView">Dashboard</button>
+          <button class="dash-tab" type="button" data-view="socialTradingView">Provider</button>
+          <button class="dash-tab" type="button" data-view="socialTradingView">Follower</button>
+        </div>
+        <button class="portal-dropdown-toggle" type="button" data-menu="followersMenu"><span>FL</span> Followers <b>v</b></button>
+        <div class="portal-submenu" id="followersMenu" hidden>
+          <button class="dash-tab" type="button" data-view="watchlistView">My Followers</button>
+          <button class="dash-tab" type="button" data-view="watchlistView">Following</button>
+        </div>
+        <button class="portal-dropdown-toggle" type="button" data-menu="socialReportsMenu"><span>SR</span> Social Trading Reports <b>v</b></button>
+        <div class="portal-submenu" id="socialReportsMenu" hidden>
+          <button class="dash-tab" type="button" data-view="reportsView">Provider Report</button>
+          <button class="dash-tab" type="button" data-view="reportsView">Follower Report</button>
+        </div>
+        <button class="portal-dropdown-toggle" type="button" data-menu="contestMenu"><span>CN</span> Contest <b>v</b></button>
+        <div class="portal-submenu" id="contestMenu" hidden>
+          <button class="dash-tab" type="button" data-view="contestView">Active Contest</button>
+          <button class="dash-tab" type="button" data-view="contestView">Contest History</button>
+        </div>
+        <button class="portal-dropdown-toggle" type="button" data-menu="bonusMenu"><span>BN</span> Bonuses <b>v</b></button>
+        <div class="portal-submenu" id="bonusMenu" hidden>
+          <button class="dash-tab" type="button" data-view="bonusesView">Bonus List</button>
+          <button class="dash-tab" type="button" data-view="bonusesView">Credit Bonus</button>
+        </div>
+        <button class="dash-tab" type="button" data-view="marketsView"><span>EC</span> Economic Calendar</button>
+        <button class="dash-tab" type="button" data-view="marketsView"><span>MR</span> Markets Report</button>
+        <button class="dash-tab admin-only" type="button" data-view="adminView" hidden><span>AM</span> Admin</button>
       </nav>
+      <div class="partner-box">
+        <strong>Make a partnership?</strong>
+        <span>Please send a request</span>
+        <a href="#supportView">Become a partner</a>
+      </div>
+    </aside>
 
-      <section class="dashboard-head">
+    <section class="portal-main">
+      <header class="portal-topbar">
         <div>
-          <p>Private client area</p>
-          <h1 id="dashboardWelcome">Loading workspace...</h1>
+          <span class="portal-crumb">Dashboard / Client Area</span>
+          <strong id="dashboardWelcome">Loading workspace...</strong>
         </div>
-        <span class="role-badge" id="roleBadge">USER</span>
-      </section>
-
-      <section class="dashboard-grid metric-grid">
-        <article class="dash-card"><span>Balance</span><strong id="metricBalance">$0.00</strong></article>
-        <article class="dash-card"><span>Equity</span><strong id="metricEquity">$0.00</strong></article>
-        <article class="dash-card"><span>Free margin</span><strong id="metricFreeMargin">$0.00</strong></article>
-        <article class="dash-card"><span>Margin level</span><strong id="metricMarginLevel">0%</strong></article>
-        <article class="dash-card"><span>Credit</span><strong id="metricCredit">$0.00</strong></article>
-        <article class="dash-card"><span>Open trades</span><strong id="metricOpenTrades">0</strong></article>
-      </section>
-
-      <section class="dashboard-tabs" aria-label="Dashboard sections">
-        <button class="dash-tab active" type="button" data-view="overviewView">Overview</button>
-        <button class="dash-tab" type="button" data-view="tradingView">Trading</button>
-        <button class="dash-tab" type="button" data-view="marketsView">Markets</button>
-        <button class="dash-tab" type="button" data-view="watchlistView">Watchlist</button>
-        <button class="dash-tab admin-only" type="button" data-view="adminView" hidden>Admin</button>
-      </section>
+        <div class="portal-actions">
+          <span class="portal-balance">Balance: <b id="metricBalance">$0.00</b></span>
+          <button id="refreshButton" type="button">Refresh</button>
+          <span>English</span>
+          <button id="logoutButton" type="button">Logout</button>
+        </div>
+      </header>
 
       <p class="dashboard-message" id="dashboardMessage" role="status"></p>
 
       <section class="dashboard-view active" id="overviewView">
-        <div class="dash-two-col">
-          <article class="dash-panel">
-            <div class="panel-head"><div><span>Profile</span><h2>Account details</h2></div></div>
-            <div class="profile-list">
-              <div><span>Name</span><strong id="profileName">-</strong></div>
-              <div><span>Email</span><strong id="profileEmail">-</strong></div>
-              <div><span>User ID</span><strong id="profileId">-</strong></div>
-              <div><span>Account number</span><strong id="profileAccount">-</strong></div>
-              <div><span>Account type</span><strong id="profileAccountType">-</strong></div>
-              <div><span>Swap enabled</span><strong id="profileSwap">-</strong></div>
+        <article class="dash-panel portal-card">
+          <div class="panel-head">
+            <div><span>Trader Area</span><h2>UPI Reports</h2></div>
+            <button class="auth-button portal-small-button" type="button">Add New UPI ID</button>
+          </div>
+          <div class="portal-table-tools"><select><option>10</option><option>25</option><option>50</option></select><input placeholder="Search"></div>
+          <div class="table-wrap"><table><thead><tr><th>UPI ID</th><th>Status</th><th>Approve Status</th><th>Request Date</th><th>Action</th></tr></thead><tbody><tr><td colspan="5">No data available in table</td></tr></tbody></table></div>
+          <div class="portal-table-footer"><span>Showing 0 to 0 of 0 entries</span><span><button type="button">&lt;</button><button type="button">&gt;</button></span></div>
+        </article>
+
+        <section class="dashboard-grid metric-grid">
+          <article class="dash-card"><span>Equity</span><strong id="metricEquity">$0.00</strong></article>
+          <article class="dash-card"><span>Free margin</span><strong id="metricFreeMargin">$0.00</strong></article>
+          <article class="dash-card"><span>Margin level</span><strong id="metricMarginLevel">0%</strong></article>
+          <article class="dash-card"><span>Credit</span><strong id="metricCredit">$0.00</strong></article>
+          <article class="dash-card"><span>Open trades</span><strong id="metricOpenTrades">0</strong></article>
+          <article class="dash-card"><span>Role</span><strong id="roleBadge">USER</strong></article>
+        </section>
+      </section>
+
+      <section class="dashboard-view" id="profileView">
+        <section class="profile-hero">
+          <div class="profile-cover"></div>
+          <div class="profile-strip">
+            <div class="profile-avatar">NM</div>
+            <div><h2 id="profileHeroName">Trader</h2><span>Trader</span></div>
+            <div class="profile-actions"><button class="active" type="button">Profile Overview</button><button type="button">Settings</button></div>
+          </div>
+        </section>
+
+        <div class="portal-profile-grid">
+          <article class="dash-panel profile-info-card trading-empty-card">
+            <div class="profile-card-title">Trading Accounts</div>
+            <p>No Trading available</p>
+            <div class="mini-pager"><button type="button">&lt;</button><button type="button">&gt;</button></div>
+            <div class="sr-only-account">
+              <strong id="barBalance">$0.00</strong>
+              <strong id="barEquity">$0.00</strong>
+              <strong id="barMargin">$0.00</strong>
+              <strong id="barFreeMargin">$0.00</strong>
             </div>
           </article>
 
-          <article class="dash-panel">
-            <div class="panel-head"><div><span>Account</span><h2>Margin snapshot</h2></div></div>
-            <div class="account-bars">
-              <div><span>Balance</span><strong id="barBalance">$0.00</strong><i></i></div>
-              <div><span>Equity</span><strong id="barEquity">$0.00</strong><i></i></div>
-              <div><span>Margin</span><strong id="barMargin">$0.00</strong><i></i></div>
-              <div><span>Free margin</span><strong id="barFreeMargin">$0.00</strong><i></i></div>
+          <article class="dash-panel profile-info-card">
+            <div class="profile-card-title">Profile Information <span>AD</span></div>
+            <div class="profile-detail-list">
+              <div><strong>Full Name:</strong><span id="profileName">-</span></div>
+              <div><strong>Mobile:</strong><span id="profileMobile">-</span></div>
+              <div><strong>Email:</strong><span id="profileEmail">-</span></div>
+              <div><strong>Address:</strong><span>-</span></div>
+              <div><strong>City:</strong><span>-</span></div>
+              <div><strong>Country:</strong><span>India</span></div>
+              <div><strong>Verification Status:</strong><span>Un-Verified</span></div>
+              <div><strong>Account Manager:</strong><span>No Account Manager</span></div>
+              <div class="hidden-profile-data"><span id="profileId">-</span><span id="profileAccount">-</span><span id="profileAccountType">-</span><span id="profileSwap">-</span></div>
+            </div>
+          </article>
+
+          <article class="dash-panel profile-info-card">
+            <div class="profile-card-title">Social Links</div>
+            <div class="social-link-list">
+              <button type="button"><span>FB</span><b>Facebook</b><em>+</em></button>
+              <button type="button"><span>TW</span><b>Twitter</b><em>+</em></button>
+              <button type="button"><span>WA</span><b>Whatsapp</b><em>+</em></button>
+              <button type="button"><span>SK</span><b>Skype</b><em>+</em></button>
+              <button type="button"><span>IN</span><b>Linked In</b><em>+</em></button>
+              <button type="button"><span>TG</span><b>Telegram</b><em>+</em></button>
             </div>
           </article>
         </div>
+      </section>
+
+      <section class="dashboard-view" id="settingsView">
+        <article class="dash-panel portal-card"><div class="panel-head"><div><span>My Admin</span><h2>Settings</h2></div></div><p>Profile preferences, password updates, and account settings will appear here.</p></article>
+      </section>
+
+      <section class="dashboard-view" id="verificationView">
+        <article class="dash-panel portal-card"><div class="panel-head"><div><span>My Admin</span><h2>Verification</h2></div></div><p>Identity, email, phone, and document verification status will appear here.</p></article>
+      </section>
+
+      <section class="dashboard-view" id="bankingView">
+        <div class="bank-page-head">
+          <h2>Bank Deposit</h2>
+          <p>We Need Your Information Becuase You Make A Transaction.</p>
+          <div class="bank-stepper" aria-label="Deposit progress">
+            <div class="active"><span></span><b>Select Bank</b></div>
+            <div><span></span><b>Transfer Request</b></div>
+            <div><span></span><b>Status</b></div>
+          </div>
+        </div>
+
+        <article class="dash-panel portal-bank-card">
+          <div class="panel-head centered"><div><h2>Let's Start With Bank Selection</h2><p>Please Select Bank Tab For Crm Bank Selection This Bank Account For Where You Transfer Money.</p></div></div>
+          <form class="dash-form bank-form deposit-request-form" data-request-name="Local Bank Deposit">
+            <label>Select A Country<select name="country" required><option value="">Select a country</option><option>India</option><option>United Arab Emirates</option></select></label>
+            <label>Select A Bank<select name="bank" required><option value="">Select a bank</option><option>HDFC Bank</option><option>ICICI Bank</option><option>State Bank</option></select></label>
+            <button class="auth-button online-submit" type="submit">Continue</button>
+          </form>
+          <div class="bank-details">
+            <div><strong>Bank Name</strong><span>---</span></div>
+            <div><strong>Account Name</strong><span>---</span></div>
+            <div><strong>Account Number</strong><span>---</span></div>
+            <div><strong>Swift Code</strong><span>---</span></div>
+            <div><strong>Routing Number</strong><span>---</span></div>
+            <div><strong>Bank Country</strong><span>---</span></div>
+            <div><strong>Bank Address</strong><span>---</span></div>
+            <div><strong>Currency</strong><span>---</span></div>
+            <div><strong>Minimum Deposit</strong><span>---</span></div>
+            <div><strong>Note</strong><span>---</span></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="upiAutoView">
+        <article class="dash-panel online-deposit-card">
+          <div class="online-deposit-head">
+            <h2>Online Deposit</h2>
+            <p>Make a request for online deposit. Its very simple and fast transaction.</p>
+          </div>
+          <form class="online-deposit-form deposit-request-form" data-request-name="UPI-Auto Deposit">
+            <label>Email<input id="upiAutoEmail" name="email" type="email" value="" placeholder="name@example.com" readonly required></label>
+            <label>Country<select name="country" required><option>India</option><option>United Arab Emirates</option><option>United States</option></select></label>
+            <label>Currency<input name="currency" value="INR" readonly required></label>
+            <label>Amount( INR )<input name="amountInr" type="number" min="1" step="0.01" placeholder="0" required></label>
+            <label>Amount( USD )<input name="amountUsd" type="number" min="1" step="0.01" placeholder="0" required></label>
+            <button class="auth-button online-submit" type="submit">Submit</button>
+          </form>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="cryptoChillView">
+        <article class="dash-panel online-deposit-card">
+          <div class="online-deposit-head">
+            <h2>Crypto Chill Deposit</h2>
+            <p>Make a request for online deposit. Its very simple and fast transaction.</p>
+          </div>
+          <form class="online-deposit-form deposit-request-form" data-request-name="Crypto Chill Deposit">
+            <label>Email<input id="cryptoChillEmail" name="email" type="email" value="" placeholder="name@example.com" readonly required></label>
+            <label>Crypto Symbol<select name="cryptoSymbol" required><option value="">Select value</option><option>BTC</option><option>ETH</option><option>USDT</option><option>USDC</option></select></label>
+            <label>Crypto Currency<select name="cryptoCurrency" required><option value="">Select value</option><option>Bitcoin</option><option>Ethereum</option><option>Tether TRC20</option><option>Tether ERC20</option></select></label>
+            <label>Amount( USD )<input name="amountUsd" type="number" min="1" step="0.01" placeholder="0" required></label>
+            <label>Amount( )<input name="amountCrypto" type="number" min="0.000001" step="0.000001" placeholder="0" required></label>
+            <button class="auth-button online-submit" type="submit">Submit</button>
+          </form>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="myFatoorahView">
+        <div class="bank-page-head compact-page-head">
+          <h2>Deposit VIA MyFatoorah</h2>
+          <p>We Need Your Information Becuase You Make A Transaction.</p>
+        </div>
+        <article class="dash-panel online-deposit-card myfatoorah-card">
+          <div class="online-deposit-head">
+            <h2>MyFatoorah Deposit</h2>
+            <p>Make a request for online deposit. Its very simple and fast transaction.</p>
+          </div>
+          <form class="online-deposit-form deposit-request-form" data-request-name="MyFatoorah Deposit">
+            <label>Amount( USD )<input name="amountUsd" type="number" min="1" step="0.01" placeholder="0" required></label>
+            <button class="auth-button online-submit" type="submit">Submit</button>
+          </form>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="cheezUpiView">
+        <div class="bank-page-head compact-page-head">
+          <h2>Deposit Via Cheez-UPI</h2>
+          <p>We Need Your Information Becuase You Make A Transaction.</p>
+        </div>
+        <article class="dash-panel online-deposit-card myfatoorah-card">
+          <div class="online-deposit-head">
+            <h2>Cheez-UPI Deposit</h2>
+            <p>Make a request for online deposit. Its very simple and fast transaction.</p>
+          </div>
+          <form class="online-deposit-form deposit-request-form" data-request-name="Cheez-UPI Deposit">
+            <label>Amount( USD )<input name="amountUsd" type="number" min="1" step="0.01" placeholder="0" required></label>
+            <label>Amount Local( INR )<input name="amountInr" type="number" min="1" step="0.01" placeholder="0" required></label>
+            <button class="auth-button online-submit" type="submit">Submit</button>
+          </form>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="spayzView">
+        <div class="bank-page-head compact-page-head">
+          <h2>Deposit via Spayz</h2>
+          <p>We Need Your Information Becuase You Make A Transaction.</p>
+        </div>
+        <article class="dash-panel online-deposit-card myfatoorah-card">
+          <div class="online-deposit-head">
+            <h2>Spayz Deposit</h2>
+            <p>Make a request for online deposit. Its very simple and fast transaction.</p>
+          </div>
+          <form class="online-deposit-form deposit-request-form" data-request-name="Spayz Deposit">
+            <label>Type<select name="type" required><option value="">Select Type</option><option>UPI</option><option>Bank</option><option>Wallet</option></select></label>
+            <label>Amount( USD )<input name="amountUsd" type="number" min="1" step="0.01" placeholder="0" required></label>
+            <label>Amount Local( )<input name="amountLocal" type="number" min="1" step="0.01" placeholder="0" required></label>
+            <button class="auth-button online-submit" type="submit">Submit</button>
+          </form>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="cashDepositView">
+        <div class="bank-page-head">
+          <h2>Cash Deposit</h2>
+          <p>We Need Your Information Becuase You Make A Transaction.</p>
+          <div class="bank-stepper two-stepper" aria-label="Cash deposit progress">
+            <div class="active"><span></span><b>Transfer Request</b></div>
+            <div><span></span><b>Status</b></div>
+          </div>
+        </div>
+
+        <article class="dash-panel cash-deposit-card">
+          <div class="online-deposit-head">
+            <h2>Lets Start With The Basic Information</h2>
+            <p>Provide the following information.</p>
+          </div>
+          <form class="cash-deposit-form deposit-request-form" data-request-name="Cash Deposit">
+            <div class="cash-visual" aria-hidden="true">
+              <div class="cash-machine"><span></span><b>$</b><em></em></div>
+            </div>
+            <div class="cash-fields">
+              <label>Amount<input name="amount" type="number" min="1" step="0.01" placeholder="0.00" required></label>
+              <label>Transaction Pin<input name="transactionPin" type="password" minlength="4" placeholder="Transaction Password" required></label>
+              <button class="auth-button online-submit" type="submit">Next</button>
+            </div>
+          </form>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="monumpayView">
+        <div class="bank-page-head compact-page-head">
+          <h2>Monumpay Deposit</h2>
+          <p>We Need Your Information Becuase You Make A Transaction.</p>
+        </div>
+        <article class="dash-panel online-deposit-card monumpay-card">
+          <div class="online-deposit-head">
+            <h2>Choose Your Deposit Currency</h2>
+            <p>Select the currency you want to use for your Monumpay deposit.</p>
+          </div>
+          <form class="online-deposit-form monumpay-form deposit-request-form" data-request-name="Monumpay Deposit">
+            <label>Currency<select name="currency" required><option value="">Select a currency</option><option>INR</option><option>USD</option><option>AED</option></select></label>
+            <label>Amount<input name="amount" type="number" min="1" step="0.01" placeholder="Amount" required></label>
+            <label>Amount (USD)<input name="amountUsd" type="number" min="1" step="0.01" placeholder="Amount (USD)" required></label>
+            <button class="auth-button online-submit monumpay-submit" type="submit">Submit Request</button>
+          </form>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="reportsView">
+        <article class="dash-panel portal-card">
+          <div class="panel-head"><div><span>Reports</span><h2>Client reports</h2></div></div>
+          <div class="table-wrap"><table><thead><tr><th>Report</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody><tr><td>UPI Report</td><td>Empty</td><td>-</td><td>View</td></tr><tr><td>Market Report</td><td>Empty</td><td>-</td><td>View</td></tr></tbody></table></div>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="supportView">
+        <article class="dash-panel portal-card">
+          <div class="panel-head"><div><span>Support</span><h2>Need help?</h2></div></div>
+          <p>Contact the client desk for deposits, verification, trading accounts, partnerships, and platform support.</p>
+          <div class="profile-list"><div><span>Email</span><strong>support@nexfordmarket.com</strong></div><div><span>Status</span><strong>Open 24/5</strong></div></div>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="tradingAccountsView">
+        <article class="dash-panel portal-card">
+          <div class="panel-head"><div><span>Trading Accounts</span><h2>Account workspace</h2></div><button class="auth-button portal-small-button" type="button">Open Account</button></div>
+          <div class="table-wrap"><table><thead><tr><th>Account</th><th>Type</th><th>Leverage</th><th>Status</th><th>Action</th></tr></thead><tbody><tr><td colspan="5">No trading account available</td></tr></tbody></table></div>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="withdrawView">
+        <article class="dash-panel portal-bank-card">
+          <div class="panel-head centered"><div><span>Withdraw</span><h2>Withdraw request</h2><p>Select a withdrawal method and submit your request for processing.</p></div></div>
+          <form class="dash-form bank-form"><label>Withdraw Method<select><option>Bank Withdraw</option><option>UPI Withdraw</option><option>CryptoChill Withdraw</option><option>Cash Withdraw</option></select></label><label>Amount<input type="number" placeholder="0.00"></label><button class="auth-button" type="button">Submit Withdraw</button></form>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="bankWithdrawView">
+        <div class="bank-page-head">
+          <h2>Bank Withdraw</h2>
+          <p>We Need Your Information Becuase You Make A Transaction.</p>
+          <div class="bank-stepper" aria-label="Bank withdraw progress">
+            <div class="active"><span></span><b>Bank Info</b></div>
+            <div><span></span><b>Address &amp; Amount</b></div>
+            <div><span></span><b>Status</b></div>
+          </div>
+        </div>
+
+        <article class="dash-panel withdraw-warning-card">
+          <div class="withdraw-warning"><strong>Warning!</strong> You must deposit before making a withdraw request.</div>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="cheezeePayWithdrawView">
+        <div class="bank-page-head">
+          <h2>CheezeePay Withdraw</h2>
+          <p>We require your information to process your transaction. Please provide the necessary details to complete your CheezeePay withdrawal securely</p>
+          <div class="bank-stepper" aria-label="CheezeePay withdraw progress">
+            <div class="active"><span></span><b>Amount</b></div>
+            <div><span></span><b>Transaction Details</b></div>
+            <div><span></span><b>Status</b></div>
+          </div>
+        </div>
+
+        <article class="dash-panel withdraw-warning-card">
+          <div class="withdraw-warning"><strong>Warning!</strong> You must deposit before making a withdraw request.</div>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="spayzWithdrawView">
+        <div class="bank-page-head">
+          <h2>Spayz Withdraw</h2>
+          <p>We require your information to process your transaction. Please provide the necessary details to complete your Spayz withdrawal securely</p>
+          <div class="bank-stepper" aria-label="Spayz withdraw progress">
+            <div class="active"><span></span><b>Amount</b></div>
+            <div><span></span><b>Transaction Details</b></div>
+            <div><span></span><b>Status</b></div>
+          </div>
+        </div>
+
+        <article class="dash-panel spayz-withdraw-card">
+          <div class="online-deposit-head">
+            <h2>Let's Begin with Basic Information</h2>
+            <p>To proceed with your Spayz withdrawal, please provide the required details below. Ensure the information is accurate to avoid any delays in processing your transaction.</p>
+          </div>
+
+          <div class="spayz-withdraw-main">
+            <div class="spayz-logo-chip"><span>S</span><strong>SPAYZ.IO</strong></div>
+            <div class="withdraw-warning spayz-kyc-warning"><strong>Warning!</strong> KYC Required for withdraw!</div>
+          </div>
+
+          <div class="spayz-fields-info">
+            <h3>Fields to Complete:</h3>
+            <p><strong>Amount:</strong> Enter the amount you wish to withdraw.</p>
+            <p><strong>Local Amount:</strong> Specify the amount in Local Currency (e.g., INR) for clarity.</p>
+          </div>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="upiWithdrawView">
+        <div class="bank-page-head">
+          <h2>UPI Withdraw</h2>
+          <p>We require your information to process your transaction. Please provide the necessary details to complete your UPI withdrawal securely</p>
+          <div class="bank-stepper upi-stepper" aria-label="UPI withdraw progress">
+            <div class="active"><span></span><b>Amount</b></div>
+            <div><span></span><b>Upload QR</b></div>
+            <div><span></span><b>Submit Request</b></div>
+            <div><span></span><b>Status</b></div>
+          </div>
+        </div>
+
+        <article class="dash-panel withdraw-warning-card">
+          <div class="withdraw-warning"><strong>Warning!</strong> You must deposit before making a withdraw request.</div>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="okPayWithdrawView">
+        <div class="bank-page-head">
+          <h2>OkPay Withdraw</h2>
+          <p>We require your information to process your transaction. Please provide the necessary details to complete your OkPay withdrawal securely</p>
+          <div class="bank-stepper upi-stepper" aria-label="OkPay withdraw progress">
+            <div class="active"><span></span><b>Amount</b></div>
+            <div><span></span><b>Chose Method</b></div>
+            <div><span></span><b>Submit Request</b></div>
+            <div><span></span><b>Status</b></div>
+          </div>
+        </div>
+
+        <article class="dash-panel withdraw-warning-card">
+          <div class="withdraw-warning"><strong>Warning!</strong> You must deposit before making a withdraw request.</div>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="cryptoChillWithdrawView">
+        <div class="bank-page-head">
+          <h2>CryptoChill Withdraw</h2>
+          <p>We require your information to process your transaction. Please provide the necessary details to complete your crypto withdrawal securely</p>
+          <div class="bank-stepper two-stepper" aria-label="CryptoChill withdraw progress">
+            <div class="active"><span></span><b>Amount</b></div>
+            <div><span></span><b>Status</b></div>
+          </div>
+        </div>
+
+        <article class="dash-panel withdraw-warning-card">
+          <div class="withdraw-warning"><strong>Warning!</strong> You must deposit before making a withdraw request.</div>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="monumpayWithdrawView">
+        <div class="bank-page-head">
+          <h2>Monumpay Withdraw</h2>
+          <p>We require your information to process your transaction. Please provide the necessary details to complete your Monumpay withdrawal securely</p>
+          <div class="bank-stepper" aria-label="Monumpay withdraw progress">
+            <div class="active"><span></span><b>Amount</b></div>
+            <div><span></span><b>Submit Request</b></div>
+            <div><span></span><b>Status</b></div>
+          </div>
+        </div>
+
+        <article class="dash-panel spayz-withdraw-card">
+          <div class="online-deposit-head">
+            <h2>Let's Begin with Basic Information</h2>
+            <p>To proceed with your Monumpay withdrawal, please provide the required details below. Ensure the information is accurate to avoid any delays in processing your transaction.</p>
+          </div>
+
+          <div class="spayz-withdraw-main">
+            <div class="cash-visual monumpay-withdraw-visual" aria-hidden="true">
+              <div class="cash-machine"><span></span><b></b><em></em></div>
+            </div>
+            <div class="withdraw-warning spayz-kyc-warning"><strong>Warning!</strong> KYC Required for withdraw!</div>
+          </div>
+
+          <div class="spayz-fields-info">
+            <h3>Fields to Complete:</h3>
+            <p><strong>Amount:</strong> Enter the amount you wish to withdraw.</p>
+            <p><strong>Local Amount:</strong> Specify the amount in Local Currency (e.g., INR) for clarity.</p>
+          </div>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="cashWithdrawView">
+        <div class="bank-page-head">
+          <h2>Cash Withdraw</h2>
+          <p>We Need Your Information Becuase You Make A Transaction.</p>
+          <div class="bank-stepper two-stepper" aria-label="Cash withdraw progress">
+            <div class="active"><span></span><b>Transfer Request</b></div>
+            <div><span></span><b>Status</b></div>
+          </div>
+        </div>
+
+        <article class="dash-panel withdraw-warning-card">
+          <div class="withdraw-warning"><strong>Warning!</strong> You must deposit before making a withdraw request.</div>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="transferView">
+        <article class="dash-panel portal-bank-card">
+          <div class="panel-head centered"><div><span>Transfer</span><h2>Internal transfer</h2><p>Move funds between wallet, trading account, or another trader.</p></div></div>
+          <form class="dash-form bank-form"><label>Transfer Type<select><option>Wallet To Account</option><option>Account To Wallet</option><option>Trader To Trader</option></select></label><label>Amount<input type="number" placeholder="0.00"></label><button class="auth-button" type="button">Continue Transfer</button></form>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="walletToAccountView">
+        <div class="bank-page-head">
+          <h2>Wallet To Account Transfer</h2>
+          <p>This Information For Your Secure Transaction.</p>
+          <div class="bank-stepper two-stepper" aria-label="Wallet to account transfer progress">
+            <div class="active"><span></span><b>Transfer Request</b></div>
+            <div><span></span><b>Status</b></div>
+          </div>
+        </div>
+
+        <article class="dash-panel transfer-card">
+          <div class="online-deposit-head">
+            <h2>Let's Start With Your Account Information</h2>
+            <p>The Account, Withdraw Amount And Transaction Password Is Required</p>
+          </div>
+          <form class="transfer-request-form deposit-request-form" data-request-name="Wallet To Account Transfer">
+            <div class="mt5-visual" aria-hidden="true"><span>5</span></div>
+            <div class="transfer-fields">
+              <label>Your Account<select name="account" required><option value="">Choose An Account</option><option>Wallet</option><option>Trading Account</option></select></label>
+              <label>Amount<input name="amount" type="number" min="1" step="0.01" required></label>
+              <label>Transaction Password<input name="transactionPassword" type="password" minlength="4" required></label>
+              <button class="auth-button online-submit" type="submit">Next</button>
+            </div>
+          </form>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="accountToWalletView">
+        <div class="bank-page-head">
+          <h2>Account To Wallet Transfer</h2>
+          <p>We Need Your Account Info.</p>
+          <div class="bank-stepper two-stepper" aria-label="Account to wallet transfer progress">
+            <div class="active"><span></span><b>Transfer Request</b></div>
+            <div><span></span><b>Status</b></div>
+          </div>
+        </div>
+
+        <article class="dash-panel account-wallet-card">
+          <div class="online-deposit-head">
+            <h2>Let's Start With Your Account Information</h2>
+            <p>The Account Number, Amount And Trasnsaction Password Is Required For Your Secure Transaction.</p>
+          </div>
+          <div class="account-wallet-layout">
+            <div class="account-wallet-left">
+              <div class="mt5-visual" aria-hidden="true"><span>5</span></div>
+              <div class="account-summary-box">
+                <div><span>Platform</span><strong>----</strong></div>
+                <div><span>Account Number</span><strong>----</strong></div>
+                <div><span>Balance</span><strong>----</strong></div>
+                <div><span>Equity</span><strong>----</strong></div>
+                <div><span>Leverage</span><strong>----</strong></div>
+                <div><span>Bonus</span><strong>----</strong></div>
+                <div><span>Withdrawable Bonus</span><strong>----</strong></div>
+              </div>
+            </div>
+            <form class="account-wallet-form deposit-request-form" data-request-name="Account To Wallet Transfer">
+              <label>Your Account<select name="account" required><option value="">Choose An Account</option><option>Trading Account</option><option>Wallet</option></select></label>
+              <label>Amount<input name="amount" type="number" min="1" step="0.01" required></label>
+              <label>Transaction Password<input name="transactionPassword" type="password" minlength="4" required></label>
+              <button class="auth-button online-submit monumpay-submit" type="submit">Submit Request</button>
+            </form>
+          </div>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="traderToTraderView">
+        <div class="bank-page-head">
+          <h2>Trader To Trader Transfer</h2>
+          <p>We Need Some Information</p>
+          <div class="bank-stepper two-stepper" aria-label="Trader to trader transfer progress">
+            <div class="active"><span></span><b>Transfer Request</b></div>
+            <div><span></span><b>Status</b></div>
+          </div>
+        </div>
+
+        <article class="dash-panel trader-transfer-card">
+          <div class="online-deposit-head">
+            <h2>Let's Start With Your Account Information</h2>
+            <p>The Recipient, Amount And Transaction Password Required For Your Secure Transaction.</p>
+          </div>
+          <form class="trader-transfer-form deposit-request-form" data-request-name="Trader To Trader Transfer">
+            <div class="trader-avatar-card" aria-hidden="true">
+              <div class="trader-avatar"><span></span></div>
+            </div>
+            <div class="transfer-fields">
+              <label>Recipient<select name="recipient" required><option value=""></option><option>Trader 1001</option><option>Trader 1002</option><option>Trader 1003</option></select></label>
+              <label>Amount<input name="amount" type="number" min="1" step="0.01" required></label>
+              <label>Transaction Password<input name="transactionPassword" type="password" minlength="4" required></label>
+              <button class="auth-button online-submit monumpay-submit" type="submit">Submit Request</button>
+            </div>
+          </form>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="copyTradingView">
+        <article class="dash-panel portal-card">
+          <div class="panel-head"><div><span>Copy Trading</span><h2>Provider and follower area</h2></div></div>
+          <div class="table-wrap"><table><thead><tr><th>Name</th><th>Role</th><th>Gain</th><th>Followers</th><th>Action</th></tr></thead><tbody><tr><td colspan="5">No copy trading data available</td></tr></tbody></table></div>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="pammView">
+        <article class="dash-panel portal-card">
+          <div class="panel-head"><div><span>Pamm</span><h2>PAMM investment area</h2></div></div>
+          <div class="table-wrap"><table><thead><tr><th>Manager</th><th>Offer</th><th>Equity</th><th>Status</th><th>Action</th></tr></thead><tbody><tr><td colspan="5">No PAMM data available</td></tr></tbody></table></div>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="socialTradingView">
+        <article class="dash-panel portal-card">
+          <div class="panel-head"><div><span>Social Trade</span><h2>Social trading dashboard</h2></div></div>
+          <div class="table-wrap"><table><thead><tr><th>Trader</th><th>Strategy</th><th>Return</th><th>Risk</th><th>Action</th></tr></thead><tbody><tr><td colspan="5">No social trading data available</td></tr></tbody></table></div>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="contestView">
+        <article class="dash-panel portal-card">
+          <div class="panel-head"><div><span>Contest</span><h2>Trading contests</h2></div></div>
+          <div class="table-wrap"><table><thead><tr><th>Contest</th><th>Prize</th><th>Status</th><th>End Date</th><th>Action</th></tr></thead><tbody><tr><td colspan="5">No contest available</td></tr></tbody></table></div>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="bonusesView">
+        <article class="dash-panel portal-card">
+          <div class="panel-head"><div><span>Bonuses</span><h2>Bonus offers</h2></div></div>
+          <div class="table-wrap"><table><thead><tr><th>Bonus</th><th>Amount</th><th>Status</th><th>Valid Till</th><th>Action</th></tr></thead><tbody><tr><td colspan="5">No bonus available</td></tr></tbody></table></div>
+        </article>
       </section>
 
       <section class="dashboard-view" id="tradingView">
         <div class="dash-two-col">
           <article class="dash-panel">
-            <div class="panel-head"><div><span>New order</span><h2>Open trade</h2></div></div>
+            <div class="panel-head"><div><span>Trading Accounts</span><h2>Open trade</h2></div></div>
             <form class="dash-form" id="openTradeForm">
               <label>Symbol<input name="symbol" value="BTCUSD" required></label>
               <label>Order type<select name="orderType"><option>BUY</option><option>SELL</option><option>BUY_LIMIT</option><option>SELL_LIMIT</option><option>BUY_STOP</option><option>SELL_STOP</option><option>BUY_STOP_LIMIT</option><option>SELL_STOP_LIMIT</option></select></label>
@@ -94,29 +737,10 @@
 
           <article class="dash-panel">
             <div class="panel-head"><div><span>Manage order</span><h2>Modify or close</h2></div></div>
-            <form class="dash-form compact-form" id="modifyTradeForm">
-              <label>Trade ID<input name="id" required></label>
-              <label>SL<input name="sl" type="number" step="0.00001"></label>
-              <label>TP<input name="tp" type="number" step="0.00001"></label>
-              <label>Volume<input name="volume" type="number" min="0.01" step="0.01"></label>
-              <button class="auth-button" type="submit">Modify trade</button>
-            </form>
-            <form class="dash-form compact-form" id="closeTradeForm">
-              <label>Trade ID<input name="id" required></label>
-              <label>Close price<input name="closePrice" type="number" step="0.00001" required></label>
-              <label>Reason<input name="reason" value="MANUAL"></label>
-              <button class="outline-button" type="submit">Close full trade</button>
-            </form>
-            <form class="dash-form compact-form" id="partialCloseForm">
-              <label>Trade ID<input name="id" required></label>
-              <label>Close volume<input name="closeVolume" type="number" min="0.01" step="0.01" required></label>
-              <label>Close price<input name="closePrice" type="number" step="0.00001" required></label>
-              <button class="outline-button" type="submit">Partial close</button>
-            </form>
-            <form class="dash-form compact-form" id="cancelTradeForm">
-              <label>Pending trade ID<input name="id" required></label>
-              <button class="danger-button" type="submit">Cancel pending order</button>
-            </form>
+            <form class="dash-form compact-form" id="modifyTradeForm"><label>Trade ID<input name="id" required></label><label>SL<input name="sl" type="number" step="0.00001"></label><label>TP<input name="tp" type="number" step="0.00001"></label><label>Volume<input name="volume" type="number" min="0.01" step="0.01"></label><button class="auth-button" type="submit">Modify trade</button></form>
+            <form class="dash-form compact-form" id="closeTradeForm"><label>Trade ID<input name="id" required></label><label>Close price<input name="closePrice" type="number" step="0.00001" required></label><label>Reason<input name="reason" value="MANUAL"></label><button class="outline-button" type="submit">Close full trade</button></form>
+            <form class="dash-form compact-form" id="partialCloseForm"><label>Trade ID<input name="id" required></label><label>Close volume<input name="closeVolume" type="number" min="0.01" step="0.01" required></label><label>Close price<input name="closePrice" type="number" step="0.00001" required></label><button class="outline-button" type="submit">Partial close</button></form>
+            <form class="dash-form compact-form" id="cancelTradeForm"><label>Pending trade ID<input name="id" required></label><button class="danger-button" type="submit">Cancel pending order</button></form>
           </article>
         </div>
 
@@ -129,70 +753,22 @@
       </section>
 
       <section class="dashboard-view" id="marketsView">
-        <article class="dash-panel">
-          <div class="panel-head">
-            <div><span>Symbols</span><h2>Backend market catalogue</h2></div>
-            <form class="inline-form" id="symbolSearchForm">
-              <input name="q" placeholder="Search BTC, GBP, gold...">
-              <select name="type"><option value="">All</option><option value="FOREX">Forex</option><option value="CRYPTO">Crypto</option><option value="INDEX">Index</option><option value="STOCK">Stock</option></select>
-              <button class="outline-button" type="submit">Search</button>
-            </form>
-          </div>
-          <div class="symbol-grid" id="symbolsGrid"></div>
-        </article>
+        <article class="dash-panel"><div class="panel-head"><div><span>Markets</span><h2>Backend market catalogue</h2></div><form class="inline-form" id="symbolSearchForm"><input name="q" placeholder="Search BTC, GBP, gold..."><select name="type"><option value="">All</option><option value="FOREX">Forex</option><option value="CRYPTO">Crypto</option><option value="INDEX">Index</option><option value="STOCK">Stock</option></select><button class="outline-button" type="submit">Search</button></form></div><div class="symbol-grid" id="symbolsGrid"></div></article>
       </section>
 
       <section class="dashboard-view" id="watchlistView">
-        <div class="dash-two-col">
-          <article class="dash-panel">
-            <div class="panel-head"><div><span>Watchlist</span><h2>Your saved symbols</h2></div></div>
-            <form class="dash-form compact-form" id="watchlistForm">
-              <label>Symbol<input name="symbol" placeholder="BTCUSD" required></label>
-              <label>Type<select name="type"><option value="CRYPTO">Crypto</option><option value="FOREX">Forex</option><option value="INDEX">Index</option><option value="STOCK">Stock</option></select></label>
-              <button class="auth-button" type="submit">Add symbol</button>
-            </form>
-            <div class="chip-list" id="watchlistChips"></div>
-          </article>
-          <article class="dash-panel">
-            <div class="panel-head"><div><span>Saved data</span><h2>Watchlist JSON</h2></div><button class="outline-button" type="button" id="saveWatchlistButton">Save to backend</button></div>
-            <pre class="json-preview" id="watchlistPreview">[]</pre>
-          </article>
-        </div>
+        <div class="dash-two-col"><article class="dash-panel"><div class="panel-head"><div><span>Followers</span><h2>Your saved symbols</h2></div></div><form class="dash-form compact-form" id="watchlistForm"><label>Symbol<input name="symbol" placeholder="BTCUSD" required></label><label>Type<select name="type"><option value="CRYPTO">Crypto</option><option value="FOREX">Forex</option><option value="INDEX">Index</option><option value="STOCK">Stock</option></select></label><button class="auth-button" type="submit">Add symbol</button></form><div class="chip-list" id="watchlistChips"></div></article><article class="dash-panel"><div class="panel-head"><div><span>Saved data</span><h2>Watchlist JSON</h2></div><button class="outline-button" type="button" id="saveWatchlistButton">Save to backend</button></div><pre class="json-preview" id="watchlistPreview">[]</pre></article></div>
       </section>
 
       <section class="dashboard-view" id="adminView">
-        <div class="dash-two-col">
-          <article class="dash-panel">
-            <div class="panel-head"><div><span>Admin</span><h2>Deposit balance</h2></div></div>
-            <form class="dash-form compact-form" id="adminBalanceForm">
-              <label>User ID<input name="userId" required></label>
-              <label>Amount<input name="amount" type="number" min="0.01" step="0.01" required></label>
-              <label>Reason<input name="reason" value="DEPOSIT"></label>
-              <button class="auth-button" type="submit">Add balance</button>
-            </form>
-          </article>
-          <article class="dash-panel">
-            <div class="panel-head"><div><span>Admin</span><h2>Credit and password</h2></div></div>
-            <form class="dash-form compact-form" id="adminCreditForm">
-              <label>User ID<input name="userId" required></label>
-              <label>Amount<input name="amount" type="number" min="0.01" step="0.01" required></label>
-              <label>Reason<input name="reason" value="BONUS"></label>
-              <button class="outline-button" type="submit">Add credit</button>
-            </form>
-            <form class="dash-form compact-form" id="adminPasswordForm">
-              <label>User ID<input name="userId" required></label>
-              <label>New password<input name="newPassword" type="password" minlength="8" required></label>
-              <button class="danger-button" type="submit">Change password</button>
-            </form>
-          </article>
-        </div>
-        <article class="dash-panel">
-          <div class="panel-head"><div><span>Runtime</span><h2>Execution cache</h2></div><button class="outline-button" type="button" id="cacheSizesButton">Load cache sizes</button></div>
-          <pre class="json-preview" id="cachePreview">{}</pre>
-        </article>
+        <div class="dash-two-col"><article class="dash-panel"><div class="panel-head"><div><span>Admin</span><h2>Deposit balance</h2></div></div><form class="dash-form compact-form" id="adminBalanceForm"><label>User ID<input name="userId" required></label><label>Amount<input name="amount" type="number" min="0.01" step="0.01" required></label><label>Reason<input name="reason" value="DEPOSIT"></label><button class="auth-button" type="submit">Add balance</button></form></article><article class="dash-panel"><div class="panel-head"><div><span>Admin</span><h2>Credit and password</h2></div></div><form class="dash-form compact-form" id="adminCreditForm"><label>User ID<input name="userId" required></label><label>Amount<input name="amount" type="number" min="0.01" step="0.01" required></label><label>Reason<input name="reason" value="BONUS"></label><button class="outline-button" type="submit">Add credit</button></form><form class="dash-form compact-form" id="adminPasswordForm"><label>User ID<input name="userId" required></label><label>New password<input name="newPassword" type="password" minlength="8" required></label><button class="danger-button" type="submit">Change password</button></form></article></div>
+        <article class="dash-panel"><div class="panel-head"><div><span>Runtime</span><h2>Execution cache</h2></div><button class="outline-button" type="button" id="cacheSizesButton">Load cache sizes</button></div><pre class="json-preview" id="cachePreview">{}</pre></article>
       </section>
-    </div>
+
+      <footer class="portal-footer"><span>NexfordMarket (c) 2026</span><a href="#">AML Policy</a><a href="#supportView">Contact Us</a><a href="#">Privacy Policy</a><a href="#">Refund Policy</a><a href="#">Terms & Conditions</a></footer>
+    </section>
   </main>
+  <button class="portal-chat" type="button" aria-label="Open chat">...</button>
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
   <script src="auth.js"></script>

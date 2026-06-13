@@ -7,6 +7,7 @@ const USER_KEY = "nexford-user";
 
 const api = {
   register: "/api/auth/register",
+  verifyRegistration: "/api/auth/verify-registration",
   login: "/api/auth/login",
   refresh: "/api/auth/refresh",
   logout: "/api/auth/logout",
@@ -134,34 +135,122 @@ async function logout() {
 }
 
 const signupForm = document.querySelector("#signupForm");
-signupForm?.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const form = new FormData(signupForm);
+let otpCountdownTimer = null;
+
+function buildSignupPayload(form) {
+  return {
+    name: form.get("name"),
+    phone: form.get("phone"),
+    email: form.get("email"),
+    password: String(form.get("password") || ""),
+    role: "USER",
+    accountType: "LIVE",
+    brokerAccountType: form.get("accountType") || "Standard STP",
+    swap: Boolean(form.get("swap"))
+  };
+}
+
+function formatOtpTime(totalSeconds) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function startOtpCountdown(expiresInMinutes = 5) {
+  const otpStatus = document.querySelector("#otpStatus");
+  const otpTimer = document.querySelector("#otpTimer");
+  const resendButton = document.querySelector("#resendOtpButton");
+  const signupButton = document.querySelector("#signupButton");
+  if (!otpStatus || !otpTimer || !resendButton) return;
+
+  clearInterval(otpCountdownTimer);
+  let remainingSeconds = Math.max(1, Number(expiresInMinutes) || 5) * 60;
+  otpStatus.hidden = false;
+  resendButton.hidden = true;
+  signupButton.disabled = false;
+  otpTimer.textContent = `Enter OTP within ${formatOtpTime(remainingSeconds)}`;
+
+  otpCountdownTimer = setInterval(() => {
+    remainingSeconds -= 1;
+    if (remainingSeconds <= 0) {
+      clearInterval(otpCountdownTimer);
+      otpTimer.textContent = "OTP expired. Please resend OTP.";
+      resendButton.hidden = false;
+      signupButton.disabled = true;
+      return;
+    }
+    otpTimer.textContent = `Enter OTP within ${formatOtpTime(remainingSeconds)}`;
+  }, 1000);
+}
+
+async function requestSignupOtp(form) {
   const password = String(form.get("password") || "");
   const confirmPassword = String(form.get("confirmPassword") || "");
 
   if (password !== confirmPassword) {
     showMessage("Passwords do not match.");
+    return false;
+  }
+
+  try {
+    const response = await backendFetch(api.register, {
+      method: "POST",
+      body: JSON.stringify(buildSignupPayload(form))
+    }, false);
+    const data = await readBody(response);
+    showMessage(data.message || data.msg || data.error || (response.ok ? "OTP ready. Check the shown delivery mode." : "Signup failed."), response.ok);
+
+    if (!response.ok) return false;
+
+    signupForm.dataset.awaitingOtp = "true";
+    document.querySelector("#otpField")?.removeAttribute("hidden");
+    document.querySelector("#otpField input")?.setAttribute("required", "required");
+    document.querySelector("#signupButton").textContent = "Verify OTP";
+    startOtpCountdown(data.expiresInMinutes || 5);
+    return true;
+  } catch {
+    showMessage("Backend not reachable. Start Spring Boot on port 8084.");
+    return false;
+  }
+}
+
+signupForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = new FormData(signupForm);
+  const awaitingOtp = signupForm.dataset.awaitingOtp === "true";
+
+  if (awaitingOtp) {
+    const email = String(form.get("email") || "").trim();
+    const otp = String(form.get("otp") || "").trim();
+
+    if (!otp) {
+      showMessage("Enter the OTP sent to your email.");
+      return;
+    }
+
+    try {
+      const response = await backendFetch(api.verifyRegistration, {
+        method: "POST",
+        body: JSON.stringify({ email, otp })
+      }, false);
+      const data = await readBody(response);
+      showMessage(data.message || data.error || (response.ok ? "Account verified. You can now log in." : "OTP verification failed."), response.ok);
+      if (response.ok) setTimeout(() => { window.location.href = "login.html"; }, 900);
+    } catch {
+      showMessage("Backend not reachable. Start Spring Boot on port 8084.");
+    }
     return;
   }
 
-  const payload = {
-    name: form.get("name"),
-    email: form.get("email"),
-    password,
-    role: "USER",
-    accountType: form.get("accountType") || "DEMO",
-    swap: Boolean(form.get("swap"))
-  };
+  await requestSignupOtp(form);
+});
 
-  try {
-    const response = await backendFetch(api.register, { method: "POST", body: JSON.stringify(payload) }, false);
-    const data = await readBody(response);
-    showMessage(data.message || data.msg || data.error || (response.ok ? "Account created. You can now log in." : "Signup failed."), response.ok);
-    if (response.ok) setTimeout(() => { window.location.href = "login.html"; }, 900);
-  } catch (error) {
-    showMessage("Backend not reachable. Start Spring Boot on port 8084.");
-  }
+document.querySelector("#resendOtpButton")?.addEventListener("click", async () => {
+  const form = new FormData(signupForm);
+  document.querySelector("#resendOtpButton").hidden = true;
+  document.querySelector("#signupButton").disabled = false;
+  document.querySelector("#otpField input").value = "";
+  await requestSignupOtp(form);
 });
 
 const loginForm = document.querySelector("#loginForm");
@@ -214,8 +303,12 @@ function renderProfile(user) {
   const role = String(user.role || "USER").toUpperCase();
   document.querySelector("#dashboardWelcome").textContent = `Welcome, ${name}`;
   document.querySelector("#roleBadge").textContent = role;
+  document.querySelector("#profileHeroName") && (document.querySelector("#profileHeroName").textContent = name);
   document.querySelector("#profileName").textContent = name;
+  document.querySelector("#profileMobile") && (document.querySelector("#profileMobile").textContent = user.phone || user.mobile || "-");
   document.querySelector("#profileEmail").textContent = user.email || "-";
+  document.querySelector("#upiAutoEmail") && (document.querySelector("#upiAutoEmail").value = user.email || "");
+  document.querySelector("#cryptoChillEmail") && (document.querySelector("#cryptoChillEmail").value = user.email || "");
   document.querySelector("#profileId").textContent = user.id || "-";
   document.querySelector("#profileAccount").textContent = user.accountNumber || "-";
   document.querySelector("#profileAccountType").textContent = user.accountType || "-";
@@ -242,6 +335,15 @@ function bindDashboardEvents() {
     });
   });
 
+  document.querySelectorAll(".portal-dropdown-toggle").forEach((button) => {
+    button.addEventListener("click", () => {
+      const menu = document.querySelector(`#${button.dataset.menu}`);
+      if (!menu) return;
+      menu.hidden = !menu.hidden;
+      button.classList.toggle("open", !menu.hidden);
+    });
+  });
+
   document.querySelector("#openTradeForm")?.addEventListener("submit", submitOpenTrade);
   document.querySelector("#modifyTradeForm")?.addEventListener("submit", submitModifyTrade);
   document.querySelector("#closeTradeForm")?.addEventListener("submit", submitCloseTrade);
@@ -252,6 +354,9 @@ function bindDashboardEvents() {
   document.querySelector("#adminBalanceForm")?.addEventListener("submit", submitAdminBalance);
   document.querySelector("#adminCreditForm")?.addEventListener("submit", submitAdminCredit);
   document.querySelector("#adminPasswordForm")?.addEventListener("submit", submitAdminPassword);
+  document.querySelectorAll(".deposit-request-form").forEach((form) => {
+    form.addEventListener("submit", submitDepositRequest);
+  });
 }
 
 async function refreshAll() {
@@ -388,6 +493,23 @@ async function submitCancelTrade(event) {
   const id = new FormData(event.currentTarget).get("id");
   await submitJson(`${api.trades}/${id}/cancel`, "DELETE", null, "Pending order cancelled.");
   await loadTrades();
+}
+
+function submitDepositRequest(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const requestName = form.dataset.requestName || "Deposit";
+  const payload = Object.fromEntries(new FormData(form).entries());
+  const requests = JSON.parse(localStorage.getItem("depositRequests") || "[]");
+
+  requests.unshift({
+    type: requestName,
+    values: payload,
+    createdAt: new Date().toISOString()
+  });
+  localStorage.setItem("depositRequests", JSON.stringify(requests.slice(0, 25)));
+
+  showMessage(`${requestName} request submitted.`, true);
 }
 
 async function submitJson(path, method, payload, successText) {
