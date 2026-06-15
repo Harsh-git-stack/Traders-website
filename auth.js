@@ -20,7 +20,8 @@ const api = {
   adminBalance: "/api/trades/admin/balance/deposit",
   adminCredit: "/api/trades/admin/credit/deposit",
   adminPassword: "/api/trades/admin/user/change-password",
-  cacheSizes: "/api/trades/admin/cache-sizes"
+  cacheSizes: "/api/trades/admin/cache-sizes",
+  clientRequests: "/api/client-requests"
 };
 
 let currentWatchlist = [];
@@ -126,12 +127,20 @@ async function refreshAccessToken() {
 }
 
 async function logout() {
-  try {
-    await backendFetch(api.logout, { method: "POST" }, false);
-  } catch {}
+  const token = getToken();
   setToken("");
   setStoredUser(null);
   window.location.href = "login.html";
+
+  if (!token) return;
+  try {
+    fetch(`${API_BASE_URL}${api.logout}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      credentials: "omit",
+      keepalive: true
+    }).catch(() => {});
+  } catch {}
 }
 
 const signupForm = document.querySelector("#signupForm");
@@ -234,8 +243,15 @@ signupForm?.addEventListener("submit", async (event) => {
         body: JSON.stringify({ email, otp })
       }, false);
       const data = await readBody(response);
-      showMessage(data.message || data.error || (response.ok ? "Account verified. You can now log in." : "OTP verification failed."), response.ok);
-      if (response.ok) setTimeout(() => { window.location.href = "login.html"; }, 900);
+      if (response.ok) {
+        const credentialMessage = data.serverUserId && data.serverPassword
+          ? ` User ID: ${data.serverUserId} | Password: ${data.serverPassword}`
+          : "";
+        showMessage(`${data.message || "Account verified. You can now log in."}${credentialMessage}`, true);
+        setTimeout(() => { window.location.href = "login.html"; }, credentialMessage ? 7000 : 1200);
+      } else {
+        showMessage(data.message || data.error || "OTP verification failed.");
+      }
     } catch {
       showMessage("Backend not reachable. Start Spring Boot on port 8084.");
     }
@@ -320,8 +336,16 @@ function bindDashboardEvents() {
   if (document.body.dataset.dashboardBound) return;
   document.body.dataset.dashboardBound = "true";
 
-  document.querySelector("#logoutButton")?.addEventListener("click", logout);
-  document.querySelector("#refreshButton")?.addEventListener("click", () => refreshAll());
+  document.addEventListener("click", (event) => {
+    if (event.target.closest("#logoutButton")) {
+      event.preventDefault();
+      logout();
+    }
+    if (event.target.closest("#refreshButton")) {
+      event.preventDefault();
+      refreshAll();
+    }
+  });
   document.querySelector("#reloadTradesButton")?.addEventListener("click", loadTrades);
   document.querySelector("#saveWatchlistButton")?.addEventListener("click", saveWatchlist);
   document.querySelector("#cacheSizesButton")?.addEventListener("click", loadCacheSizes);
@@ -354,14 +378,16 @@ function bindDashboardEvents() {
   document.querySelector("#adminBalanceForm")?.addEventListener("submit", submitAdminBalance);
   document.querySelector("#adminCreditForm")?.addEventListener("submit", submitAdminCredit);
   document.querySelector("#adminPasswordForm")?.addEventListener("submit", submitAdminPassword);
-  document.querySelectorAll(".deposit-request-form").forEach((form) => {
+  document.querySelectorAll(".deposit-request-form, .client-request-form").forEach((form) => {
     form.addEventListener("submit", submitDepositRequest);
   });
 }
 
 async function refreshAll() {
-  await Promise.allSettled([loadAccount(), loadTrades(), loadSymbols(), loadWatchlist()]);
-  showMessage("Dashboard refreshed.", true);
+  showMessage("Refreshing dashboard...", true);
+  const results = await Promise.allSettled([loadAccount(), loadTrades(), loadSymbols(), loadWatchlist()]);
+  const failed = results.filter((result) => result.status === "rejected").length;
+  showMessage(failed ? `Refresh completed with ${failed} failed request(s).` : "Dashboard refreshed.", failed === 0);
 }
 
 async function loadAccount() {
@@ -495,21 +521,25 @@ async function submitCancelTrade(event) {
   await loadTrades();
 }
 
-function submitDepositRequest(event) {
+async function submitDepositRequest(event) {
   event.preventDefault();
   const form = event.currentTarget;
   const requestName = form.dataset.requestName || "Deposit";
   const payload = Object.fromEntries(new FormData(form).entries());
-  const requests = JSON.parse(localStorage.getItem("depositRequests") || "[]");
 
-  requests.unshift({
-    type: requestName,
-    values: payload,
-    createdAt: new Date().toISOString()
-  });
-  localStorage.setItem("depositRequests", JSON.stringify(requests.slice(0, 25)));
+  try {
+    const { response } = await submitJson(api.clientRequests, "POST", {
+      requestType: requestName,
+      payload
+    }, `${requestName} request submitted.`);
 
-  showMessage(`${requestName} request submitted.`, true);
+    if (response.ok) {
+      form.reset();
+      renderProfile(getStoredUser() || {});
+    }
+  } catch {
+    showMessage("Backend not reachable. Request was not saved.");
+  }
 }
 
 async function submitJson(path, method, payload, successText) {
@@ -517,7 +547,10 @@ async function submitJson(path, method, payload, successText) {
   if (payload !== null) options.body = JSON.stringify(payload);
   const response = await backendFetch(path, options);
   const data = await readBody(response);
-  showMessage(data.message || data.error || data.msg || (response.ok ? successText : "Action failed."), response.ok);
+  const fallback = response.status === 401
+    ? "Session expired. Please log in again."
+    : `Action failed. Status ${response.status}.`;
+  showMessage(data.message || data.error || data.msg || (response.ok ? successText : fallback), response.ok);
   return { response, data };
 }
 

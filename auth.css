@@ -880,6 +880,12 @@ tr:last-child td { border-bottom: 0; }
   font-weight: 800;
 }
 
+.withdraw-request-form {
+  display: grid;
+  justify-items: center;
+  margin-top: 18px;
+}
+
 .spayz-withdraw-card {
   width: min(690px, 100%);
   justify-self: center;
