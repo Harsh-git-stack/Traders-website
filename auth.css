@@ -97,6 +97,7 @@ button, input, select, textarea { font: inherit; }
 .otp-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--auth-muted); font-weight: 800; }
 .auth-link-button { border: 0; padding: 0; color: var(--auth-green); background: transparent; font-weight: 800; cursor: pointer; }
 .auth-link-button:hover { text-decoration: underline; }
+.auth-center-link { justify-self: center; }
 .auth-message { min-height: 22px; margin: 0; color: var(--auth-danger); font-weight: 700; }
 .auth-message.success { color: var(--auth-green); }
 .auth-switch { color: var(--auth-muted); text-align: center; }
@@ -770,6 +771,186 @@ tr:last-child td { border-bottom: 0; }
   background: rgba(255, 255, 255, 0.03);
 }
 
+.deposit-method-shell {
+  width: 100%;
+  display: grid;
+  gap: 24px;
+  justify-self: stretch;
+  align-self: start;
+  padding: clamp(8px, 2vw, 24px) 0 28px;
+}
+
+.deposit-method-head {
+  display: grid;
+  gap: 8px;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+}
+
+.deposit-method-head span {
+  color: var(--auth-green);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.deposit-method-head h2 {
+  margin: 0;
+  color: var(--auth-ink);
+  font-size: 24px;
+}
+
+.deposit-method-grid {
+  width: min(1180px, 100%);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 18px;
+  margin: 0 auto;
+}
+
+.deposit-method-card {
+  position: relative;
+  min-height: 190px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  border: 1px solid var(--auth-line);
+  border-radius: 8px;
+  color: var(--auth-muted);
+  background: var(--auth-panel);
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.deposit-method-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--auth-green);
+  background: rgba(19, 185, 143, 0.1);
+}
+
+.deposit-method-card.locked {
+  cursor: not-allowed;
+  opacity: 0.78;
+}
+
+.deposit-method-card.locked:hover {
+  transform: none;
+  border-color: var(--auth-line);
+  background: var(--auth-panel);
+}
+
+.method-lock {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 16px;
+  height: 16px;
+  overflow: hidden;
+  color: transparent;
+}
+
+.method-lock::before,
+.method-lock::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 1.8px solid var(--auth-muted);
+}
+
+.method-lock::before {
+  top: 1px;
+  width: 8px;
+  height: 7px;
+  border-bottom: 0;
+  border-radius: 7px 7px 0 0;
+}
+
+.method-lock::after {
+  bottom: 2px;
+  width: 11px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.method-icon,
+.method-logo {
+  width: 52px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--auth-line);
+  border-radius: 8px;
+  color: var(--auth-green);
+  background: var(--auth-soft);
+  font-weight: 900;
+}
+
+.method-icon {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+}
+
+.crypto-icon {
+  color: #fff;
+  background: #111;
+}
+
+.usdt-icon {
+  color: #fff;
+  background: var(--auth-green);
+}
+
+.bank-icon {
+  color: var(--auth-ink);
+}
+
+.deposit-method-card b {
+  color: var(--auth-muted);
+  font-size: 15px;
+}
+
+.upi-scanner-card {
+  width: min(760px, 100%);
+  justify-self: center;
+  display: grid;
+  gap: 22px;
+}
+
+.deposit-back-button {
+  justify-self: start;
+}
+
+.upi-scanner-layout {
+  display: grid;
+  justify-items: center;
+  align-items: center;
+}
+
+.upi-qr-box {
+  display: grid;
+  place-items: center;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--auth-line);
+  border-radius: 8px;
+  background: var(--auth-soft);
+}
+
+.upi-scanner-img {
+  width: min(320px, 70vw);
+  aspect-ratio: 1;
+  display: block;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.upi-qr-box span {
+  color: var(--auth-green);
+  font-weight: 900;
+}
+
 .online-deposit-card {
   width: min(690px, 100%);
   justify-self: center;
@@ -860,6 +1041,160 @@ tr:last-child td { border-bottom: 0; }
   width: min(690px, 100%);
   justify-self: center;
   padding: 16px;
+}
+
+.withdraw-method-shell {
+  width: min(560px, 100%);
+  display: grid;
+  gap: 16px;
+  justify-self: start;
+}
+
+.withdraw-method-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.withdraw-method-top h2 {
+  margin: 0;
+  color: var(--auth-ink);
+  font-size: 24px;
+}
+
+.withdraw-method-top p,
+.withdraw-disabled-head p {
+  margin: 5px 0 0;
+  color: var(--auth-muted);
+}
+
+.withdraw-account-card {
+  display: grid;
+  gap: 5px;
+  min-height: 72px;
+  border: 1px solid var(--auth-line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  color: var(--auth-muted);
+  background: var(--auth-panel);
+}
+
+.withdraw-account-card strong {
+  color: var(--auth-ink);
+  font-size: 18px;
+}
+
+.withdraw-account-card b {
+  margin-left: 6px;
+  border-radius: 5px;
+  padding: 2px 7px;
+  color: #051310;
+  background: var(--auth-green);
+  font-size: 10px;
+}
+
+.withdraw-disabled-head {
+  display: grid;
+  gap: 4px;
+  color: var(--auth-muted);
+  font-size: 12px;
+}
+
+.withdraw-disabled-head span {
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.withdraw-disabled-head b {
+  color: var(--auth-green);
+}
+
+.withdraw-method-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.withdraw-method-card {
+  position: relative;
+  min-height: 132px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  border: 1px solid var(--auth-line);
+  border-radius: 8px;
+  color: var(--auth-muted);
+  background: var(--auth-panel);
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.withdraw-method-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--auth-green);
+  background: rgba(19, 185, 143, 0.1);
+}
+
+.withdraw-method-card.locked {
+  cursor: not-allowed;
+  opacity: 0.78;
+}
+
+.withdraw-method-card.locked:hover {
+  transform: none;
+  border-color: var(--auth-line);
+  background: var(--auth-panel);
+}
+
+.withdraw-method-card b {
+  color: var(--auth-muted);
+  font-size: 13px;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.binance-logo {
+  width: 76px;
+  color: #caa94c;
+  font-size: 9px;
+}
+
+.online-bank-withdraw-card {
+  width: min(860px, 100%);
+  justify-self: center;
+  display: grid;
+  gap: 22px;
+}
+
+.online-bank-withdraw-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.online-bank-withdraw-form label {
+  display: grid;
+  gap: 9px;
+  color: var(--auth-ink);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.online-bank-withdraw-form input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--auth-line);
+  border-radius: 8px;
+  padding: 0 13px;
+  color: var(--auth-ink);
+  background: var(--auth-soft);
+  outline: none;
+}
+
+.online-bank-withdraw-form button {
+  grid-column: 1 / -1;
 }
 
 .withdraw-warning {
@@ -1634,6 +1969,25 @@ tr:last-child td { border-bottom: 0; }
   .account-wallet-layout {
     grid-template-columns: 1fr;
   }
+  .deposit-method-shell {
+    justify-self: center;
+  }
+  .deposit-method-grid {
+    grid-template-columns: repeat(2, minmax(150px, 1fr));
+  }
+  .deposit-method-card {
+    min-height: 150px;
+  }
+  .withdraw-method-shell {
+    justify-self: center;
+  }
+  .online-bank-withdraw-form {
+    grid-template-columns: 1fr;
+  }
+  .upi-scanner-layout {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
   .trader-transfer-form {
     grid-template-columns: 1fr;
     justify-items: center;
@@ -1677,6 +2031,21 @@ tr:last-child td { border-bottom: 0; }
   .portal-shell { padding: 12px; }
   .bank-details div {
     grid-template-columns: 1fr;
+  }
+  .deposit-method-grid {
+    grid-template-columns: 1fr;
+  }
+  .deposit-method-card {
+    min-height: 120px;
+  }
+  .withdraw-method-grid {
+    grid-template-columns: 1fr;
+  }
+  .withdraw-method-card {
+    min-height: 116px;
+  }
+  .upi-scanner-img {
+    width: 150px;
   }
   .portal-table-tools,
   .portal-table-footer {

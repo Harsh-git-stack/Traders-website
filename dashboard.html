@@ -31,29 +31,9 @@
           <button class="dash-tab" type="button" data-view="tradingAccountsView">Trading Account Settings</button>
         </div>
 
-        <button class="portal-dropdown-toggle" type="button" data-menu="depositMenu"><span>DP</span> Deposit <b>v</b></button>
-        <div class="portal-submenu" id="depositMenu" hidden>
-          <button class="dash-tab" type="button" data-view="bankingView">Local Bank</button>
-          <button class="dash-tab" type="button" data-view="upiAutoView">UPI-Auto</button>
-          <button class="dash-tab" type="button" data-view="cryptoChillView">CryptoChill</button>
-          <button class="dash-tab" type="button" data-view="myFatoorahView">MyFatoorah Deposit</button>
-          <button class="dash-tab" type="button" data-view="cheezUpiView">Cheez-UPI</button>
-          <button class="dash-tab" type="button" data-view="spayzView">Spayz Deposit</button>
-          <button class="dash-tab" type="button" data-view="cashDepositView">Cash Deposit</button>
-          <button class="dash-tab" type="button" data-view="monumpayView">Monumpay Deposit</button>
-        </div>
+        <button class="portal-dropdown-toggle" type="button" data-view="depositMethodsView"><span>DP</span> Deposit <b>v</b></button>
 
-        <button class="portal-dropdown-toggle" type="button" data-menu="withdrawMenu"><span>WD</span> Withdraw <b>v</b></button>
-        <div class="portal-submenu" id="withdrawMenu" hidden>
-          <button class="dash-tab" type="button" data-view="bankWithdrawView">Bank Withdraw</button>
-          <button class="dash-tab" type="button" data-view="cheezeePayWithdrawView">CheezeePay Withdraw</button>
-          <button class="dash-tab" type="button" data-view="spayzWithdrawView">Spayz Withdraw</button>
-          <button class="dash-tab" type="button" data-view="upiWithdrawView">UPI Withdraw</button>
-          <button class="dash-tab" type="button" data-view="okPayWithdrawView">OkPay Withdraw</button>
-          <button class="dash-tab" type="button" data-view="cryptoChillWithdrawView">CryptoChill Withdraw</button>
-          <button class="dash-tab" type="button" data-view="monumpayWithdrawView">Monumpay Withdraw</button>
-          <button class="dash-tab" type="button" data-view="cashWithdrawView">Cash Withdraw</button>
-        </div>
+        <button class="portal-dropdown-toggle" type="button" data-view="withdrawalMethodsView"><span>WD</span> Withdraw <b>v</b></button>
 
         <button class="portal-dropdown-toggle" type="button" data-menu="transferMenu"><span>TR</span> Transfer <b>v</b></button>
         <div class="portal-submenu" id="transferMenu" hidden>
@@ -224,6 +204,64 @@
 
       <section class="dashboard-view" id="verificationView">
         <article class="dash-panel portal-card"><div class="panel-head"><div><span>My Admin</span><h2>Verification</h2></div></div><p>Identity, email, phone, and document verification status will appear here.</p></article>
+      </section>
+
+      <section class="dashboard-view" id="depositMethodsView">
+        <div class="deposit-method-shell">
+          <div class="deposit-method-head">
+            <span>Verify your Account &gt;</span>
+            <h2>Choose Deposit Method</h2>
+          </div>
+
+          <div class="deposit-method-grid" aria-label="Deposit methods">
+            <button class="deposit-method-card locked" type="button" disabled>
+              <span class="method-lock">Lock</span>
+              <span class="method-icon crypto-icon">C</span>
+              <b>Cryptocurrencies</b>
+            </button>
+            <button class="deposit-method-card locked" type="button" disabled>
+              <span class="method-lock">Lock</span>
+              <span class="method-icon usdt-icon">T</span>
+              <b>USDT</b>
+            </button>
+            <button class="deposit-method-card" type="button" data-deposit-method="upiScannerView">
+              <span class="method-lock">Lock</span>
+              <span class="method-logo">UPI</span>
+              <b>UPI</b>
+            </button>
+            <button class="deposit-method-card" type="button" data-deposit-method="upiScannerView">
+              <span class="method-lock">Lock</span>
+              <span class="method-logo">UPI</span>
+              <b>UPI</b>
+            </button>
+            <button class="deposit-method-card locked" type="button" disabled>
+              <span class="method-lock">Lock</span>
+              <span class="method-logo">IMPS</span>
+              <b>Local Bank Transfer</b>
+            </button>
+            <button class="deposit-method-card locked" type="button" disabled>
+              <span class="method-lock">Lock</span>
+              <span class="method-icon bank-icon">B</span>
+              <b>Online Bank Transfer</b>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="dashboard-view" id="upiScannerView">
+        <article class="dash-panel upi-scanner-card">
+          <button class="outline-button deposit-back-button" type="button" data-deposit-method="depositMethodsView">Back</button>
+          <div class="online-deposit-head">
+            <h2>UPI Deposit</h2>
+            <p>Scan the QR code and submit your transaction details for approval.</p>
+          </div>
+          <div class="upi-scanner-layout">
+            <div class="upi-qr-box" aria-label="UPI scanner preview">
+              <img class="upi-scanner-img" src="assets/upi-scanner.svg" alt="UPI QR scanner">
+              <span>UPI</span>
+            </div>
+          </div>
+        </article>
       </section>
 
       <section class="dashboard-view" id="bankingView">
@@ -416,10 +454,65 @@
         </article>
       </section>
 
-      <section class="dashboard-view" id="withdrawView">
-        <article class="dash-panel portal-bank-card">
-          <div class="panel-head centered"><div><span>Withdraw</span><h2>Withdraw request</h2><p>Select a withdrawal method and submit your request for processing.</p></div></div>
-          <form class="dash-form bank-form"><label>Withdraw Method<select><option>Bank Withdraw</option><option>UPI Withdraw</option><option>CryptoChill Withdraw</option><option>Cash Withdraw</option></select></label><label>Amount<input type="number" placeholder="0.00"></label><button class="auth-button" type="button">Submit Withdraw</button></form>
+      <section class="dashboard-view" id="withdrawalMethodsView">
+        <div class="withdraw-method-shell">
+          <div class="withdraw-method-top">
+            <div>
+              <h2>Withdrawal Methods</h2>
+              <p>Choose where you want to receive your funds.</p>
+            </div>
+          </div>
+
+          <article class="withdraw-account-card">
+            <span>Ultra Low Standard <b>Real</b></span>
+            <strong>0.00 USD</strong>
+            <small>#317425425</small>
+          </article>
+
+          <div class="withdraw-disabled-head">
+            <span>Disabled Methods</span>
+            <p>These payment methods cannot be used since they are only for verified clients</p>
+            <b>Verify your Account &gt;</b>
+          </div>
+
+          <div class="withdraw-method-grid" aria-label="Withdrawal methods">
+            <button class="withdraw-method-card" type="button" data-withdraw-method="onlineBankWithdrawFormView">
+              <span class="method-lock">Lock</span>
+              <span class="method-icon bank-icon">B</span>
+              <b>Online Bank<br>Transfer</b>
+            </button>
+            <button class="withdraw-method-card locked" type="button" disabled>
+              <span class="method-lock">Lock</span>
+              <span class="method-logo binance-logo">BINANCE PAY</span>
+              <b>Binance Pay</b>
+            </button>
+            <button class="withdraw-method-card locked" type="button" disabled>
+              <span class="method-lock">Lock</span>
+              <span class="method-icon crypto-icon">C</span>
+              <b>Cryptocurrency</b>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="dashboard-view" id="onlineBankWithdrawFormView">
+        <article class="dash-panel online-bank-withdraw-card">
+          <button class="outline-button deposit-back-button" type="button" data-withdraw-method="withdrawalMethodsView">Back</button>
+          <div class="online-deposit-head">
+            <h2>Online Bank Transfer</h2>
+            <p>Enter your bank details carefully. IFSC and account details are required for processing.</p>
+          </div>
+          <form class="online-bank-withdraw-form client-request-form" data-request-name="Online Bank Withdraw">
+            <label>Account Holder Name<input name="accountHolderName" placeholder="Name as per bank account" required></label>
+            <label>Bank Name<input name="bankName" placeholder="Enter bank name" required></label>
+            <label>Account Number<input name="accountNumber" inputmode="numeric" placeholder="Enter account number" required></label>
+            <label>Confirm Account Number<input name="confirmAccountNumber" inputmode="numeric" placeholder="Re-enter account number" required></label>
+            <label>IFSC Code<input name="ifscCode" placeholder="Example: HDFC0001234" required></label>
+            <label>Branch Name<input name="branchName" placeholder="Enter branch name"></label>
+            <label>Amount<input name="amount" type="number" min="1" step="0.01" placeholder="0.00" required></label>
+            <label>Transaction Password<input name="transactionPassword" type="password" placeholder="Transaction password" required></label>
+            <button class="auth-button online-submit" type="submit">Submit Request</button>
+          </form>
         </article>
       </section>
 

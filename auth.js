@@ -8,6 +8,8 @@ const USER_KEY = "nexford-user";
 const api = {
   register: "/api/auth/register",
   verifyRegistration: "/api/auth/verify-registration",
+  forgotPassword: "/api/auth/forgot-password",
+  resetPassword: "/api/auth/reset-password",
   login: "/api/auth/login",
   refresh: "/api/auth/refresh",
   logout: "/api/auth/logout",
@@ -240,15 +242,13 @@ signupForm?.addEventListener("submit", async (event) => {
     try {
       const response = await backendFetch(api.verifyRegistration, {
         method: "POST",
-        body: JSON.stringify({ email, otp })
+        body: JSON.stringify({ email, otp, password: String(form.get("password") || "") })
       }, false);
       const data = await readBody(response);
       if (response.ok) {
-        const credentialMessage = data.serverUserId && data.serverPassword
-          ? ` User ID: ${data.serverUserId} | Password: ${data.serverPassword}`
-          : "";
+        const credentialMessage = data.serverUserId ? ` User ID: ${data.serverUserId}` : "";
         showMessage(`${data.message || "Account verified. You can now log in."}${credentialMessage}`, true);
-        setTimeout(() => { window.location.href = "login.html"; }, credentialMessage ? 7000 : 1200);
+        setTimeout(() => { window.location.href = "login.html"; }, credentialMessage ? 3000 : 1200);
       } else {
         showMessage(data.message || data.error || "OTP verification failed.");
       }
@@ -270,6 +270,146 @@ document.querySelector("#resendOtpButton")?.addEventListener("click", async () =
 });
 
 const loginForm = document.querySelector("#loginForm");
+const forgotPasswordForm = document.querySelector("#forgotPasswordForm");
+let resetOtpCountdownTimer = null;
+
+function setForgotMode(enabled) {
+  if (!loginForm || !forgotPasswordForm) return;
+  loginForm.hidden = enabled;
+  forgotPasswordForm.hidden = !enabled;
+  showMessage("");
+}
+
+function resetForgotPasswordFormState() {
+  clearInterval(resetOtpCountdownTimer);
+  forgotPasswordForm?.reset();
+  if (forgotPasswordForm) forgotPasswordForm.dataset.awaitingOtp = "false";
+  ["#resetOtpField", "#newPasswordField", "#confirmNewPasswordField", "#resetOtpStatus"].forEach((selector) => {
+    const el = document.querySelector(selector);
+    if (el) el.hidden = true;
+  });
+  ["#resetOtpField input", "#newPasswordField input", "#confirmNewPasswordField input"].forEach((selector) => {
+    document.querySelector(selector)?.removeAttribute("required");
+  });
+  const forgotButton = document.querySelector("#forgotPasswordButton");
+  if (forgotButton) {
+    forgotButton.textContent = "Send reset OTP";
+    forgotButton.disabled = false;
+  }
+}
+
+function startResetOtpCountdown(expiresInMinutes = 5) {
+  const otpStatus = document.querySelector("#resetOtpStatus");
+  const otpTimer = document.querySelector("#resetOtpTimer");
+  const resendButton = document.querySelector("#resendResetOtpButton");
+  const resetButton = document.querySelector("#forgotPasswordButton");
+  if (!otpStatus || !otpTimer || !resendButton || !resetButton) return;
+
+  clearInterval(resetOtpCountdownTimer);
+  let remainingSeconds = Math.max(1, Number(expiresInMinutes) || 5) * 60;
+  otpStatus.hidden = false;
+  resendButton.hidden = true;
+  resetButton.disabled = false;
+  otpTimer.textContent = `Enter OTP within ${formatOtpTime(remainingSeconds)}`;
+
+  resetOtpCountdownTimer = setInterval(() => {
+    remainingSeconds -= 1;
+    if (remainingSeconds <= 0) {
+      clearInterval(resetOtpCountdownTimer);
+      otpTimer.textContent = "OTP expired. Please resend OTP.";
+      resendButton.hidden = false;
+      resetButton.disabled = true;
+      return;
+    }
+    otpTimer.textContent = `Enter OTP within ${formatOtpTime(remainingSeconds)}`;
+  }, 1000);
+}
+
+async function requestPasswordResetOtp(form) {
+  const email = String(form.get("email") || "").trim();
+  if (!email) {
+    showMessage("Enter your email address.");
+    return false;
+  }
+
+  try {
+    const response = await backendFetch(api.forgotPassword, {
+      method: "POST",
+      body: JSON.stringify({ email })
+    }, false);
+    const data = await readBody(response);
+    showMessage(data.message || data.error || (response.ok ? "OTP sent to email." : "Could not send OTP."), response.ok);
+    if (!response.ok) return false;
+
+    forgotPasswordForm.dataset.awaitingOtp = "true";
+    document.querySelector("#resetOtpField").hidden = false;
+    document.querySelector("#newPasswordField").hidden = false;
+    document.querySelector("#confirmNewPasswordField").hidden = false;
+    document.querySelector("#resetOtpField input").setAttribute("required", "required");
+    document.querySelector("#newPasswordField input").setAttribute("required", "required");
+    document.querySelector("#confirmNewPasswordField input").setAttribute("required", "required");
+    document.querySelector("#forgotPasswordButton").textContent = "Reset password";
+    startResetOtpCountdown(data.expiresInMinutes || 5);
+    return true;
+  } catch {
+    showMessage("Backend not reachable. Start Spring Boot on port 8084.");
+    return false;
+  }
+}
+
+document.querySelector("#showForgotPassword")?.addEventListener("click", () => setForgotMode(true));
+document.querySelector("#backToLoginButton")?.addEventListener("click", () => {
+  resetForgotPasswordFormState();
+  setForgotMode(false);
+});
+
+forgotPasswordForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = new FormData(forgotPasswordForm);
+  const awaitingOtp = forgotPasswordForm.dataset.awaitingOtp === "true";
+
+  if (!awaitingOtp) {
+    await requestPasswordResetOtp(form);
+    return;
+  }
+
+  const newPassword = String(form.get("newPassword") || "");
+  const confirmNewPassword = String(form.get("confirmNewPassword") || "");
+  if (newPassword !== confirmNewPassword) {
+    showMessage("New passwords do not match.");
+    return;
+  }
+
+  try {
+    const response = await backendFetch(api.resetPassword, {
+      method: "POST",
+      body: JSON.stringify({
+        email: form.get("email"),
+        otp: form.get("otp"),
+        newPassword
+      })
+    }, false);
+    const data = await readBody(response);
+    showMessage(data.message || data.error || (response.ok ? "Password reset successful." : "Password reset failed."), response.ok);
+    if (response.ok) {
+      setTimeout(() => {
+        resetForgotPasswordFormState();
+        setForgotMode(false);
+      }, 1200);
+    }
+  } catch {
+    showMessage("Backend not reachable. Start Spring Boot on port 8084.");
+  }
+});
+
+document.querySelector("#resendResetOtpButton")?.addEventListener("click", async () => {
+  const form = new FormData(forgotPasswordForm);
+  document.querySelector("#resendResetOtpButton").hidden = true;
+  document.querySelector("#forgotPasswordButton").disabled = false;
+  document.querySelector("#resetOtpField input").value = "";
+  await requestPasswordResetOtp(form);
+});
+
 loginForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = new FormData(loginForm);
@@ -352,19 +492,33 @@ function bindDashboardEvents() {
 
   document.querySelectorAll(".dash-tab").forEach((button) => {
     button.addEventListener("click", () => {
-      document.querySelectorAll(".dash-tab").forEach((tab) => tab.classList.remove("active"));
-      document.querySelectorAll(".dashboard-view").forEach((view) => view.classList.remove("active"));
-      button.classList.add("active");
-      document.querySelector(`#${button.dataset.view}`)?.classList.add("active");
+      activateDashboardView(button.dataset.view, button);
     });
   });
 
   document.querySelectorAll(".portal-dropdown-toggle").forEach((button) => {
     button.addEventListener("click", () => {
+      if (button.dataset.view) {
+        activateDashboardView(button.dataset.view, button);
+        return;
+      }
       const menu = document.querySelector(`#${button.dataset.menu}`);
       if (!menu) return;
       menu.hidden = !menu.hidden;
       button.classList.toggle("open", !menu.hidden);
+    });
+  });
+
+  document.querySelectorAll("[data-deposit-method]").forEach((button) => {
+    button.addEventListener("click", () => {
+      activateDashboardView(button.dataset.depositMethod);
+      renderProfile(getStoredUser() || {});
+    });
+  });
+
+  document.querySelectorAll("[data-withdraw-method]").forEach((button) => {
+    button.addEventListener("click", () => {
+      activateDashboardView(button.dataset.withdrawMethod);
     });
   });
 
@@ -381,6 +535,14 @@ function bindDashboardEvents() {
   document.querySelectorAll(".deposit-request-form, .client-request-form").forEach((form) => {
     form.addEventListener("submit", submitDepositRequest);
   });
+}
+
+function activateDashboardView(viewId, activeButton = null) {
+  if (!viewId) return;
+  document.querySelectorAll(".dash-tab, .portal-dropdown-toggle").forEach((tab) => tab.classList.remove("active"));
+  document.querySelectorAll(".dashboard-view").forEach((view) => view.classList.remove("active"));
+  document.querySelector(`#${viewId}`)?.classList.add("active");
+  if (activeButton) activeButton.classList.add("active");
 }
 
 async function refreshAll() {
@@ -526,6 +688,10 @@ async function submitDepositRequest(event) {
   const form = event.currentTarget;
   const requestName = form.dataset.requestName || "Deposit";
   const payload = Object.fromEntries(new FormData(form).entries());
+  if (requestName === "Online Bank Withdraw" && payload.accountNumber !== payload.confirmAccountNumber) {
+    showMessage("Account number and confirm account number do not match.");
+    return;
+  }
 
   try {
     const { response } = await submitJson(api.clientRequests, "POST", {

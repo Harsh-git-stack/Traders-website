@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="UPI QR scanner">
+  <rect width="320" height="320" rx="24" fill="#ffffff"/>
+  <rect x="24" y="24" width="272" height="272" rx="16" fill="#ffffff" stroke="#0c1714" stroke-width="8"/>
+  <g fill="#0c1714">
+    <path d="M48 48h72v72H48zM64 64v40h40V64zM200 48h72v72h-72zM216 64v40h40V64zM48 200h72v72H48zM64 216v40h40v-40z"/>
+    <rect x="144" y="48" width="24" height="24"/>
+    <rect x="144" y="96" width="24" height="24"/>
+    <rect x="176" y="72" width="24" height="24"/>
+    <rect x="144" y="144" width="24" height="24"/>
+    <rect x="176" y="144" width="48" height="24"/>
+    <rect x="248" y="144" width="24" height="24"/>
+    <rect x="48" y="144" width="24" height="24"/>
+    <rect x="96" y="144" width="24" height="24"/>
+    <rect x="144" y="200" width="24" height="24"/>
+    <rect x="176" y="200" width="24" height="48"/>
+    <rect x="224" y="200" width="48" height="24"/>
+    <rect x="144" y="272" width="24" height="24"/>
+    <rect x="200" y="248" width="24" height="24"/>
+    <rect x="248" y="248" width="24" height="48"/>
+  </g>
+  <path d="M20 86V36c0-9 7-16 16-16h50M234 20h50c9 0 16 7 16 16v50M300 234v50c0 9-7 16-16 16h-50M86 300H36c-9 0-16-7-16-16v-50" fill="none" stroke="#18c39a" stroke-width="10" stroke-linecap="round"/>
+  <rect x="82" y="150" width="156" height="20" rx="10" fill="#18c39a" opacity=".86"/>
+</svg>

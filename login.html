@@ -23,10 +23,22 @@
         <form class="auth-form" id="loginForm">
           <label>Email address<input type="email" name="email" placeholder="name@example.com" required></label>
           <label>Password<input type="password" name="password" placeholder="Your password" required></label>
-          <div class="auth-row"><label><input type="checkbox" name="remember">Remember me</label><a class="auth-link" href="#">Forgot password?</a></div>
+          <div class="auth-row"><label><input type="checkbox" name="remember">Remember me</label><button class="auth-link-button" id="showForgotPassword" type="button">Forgot password?</button></div>
           <button class="auth-button" type="submit">Log in</button>
-          <p class="auth-message" id="authMessage" role="status"></p>
         </form>
+        <form class="auth-form forgot-form" id="forgotPasswordForm" hidden>
+          <label>Email address<input type="email" name="email" placeholder="name@example.com" required></label>
+          <label id="resetOtpField" hidden>Email OTP<input type="text" name="otp" placeholder="6 digit code" inputmode="numeric" minlength="6" maxlength="6"></label>
+          <label id="newPasswordField" hidden>New password<input type="password" name="newPassword" placeholder="12 chars, A-z, number, special" minlength="12"></label>
+          <label id="confirmNewPasswordField" hidden>Confirm new password<input type="password" name="confirmNewPassword" placeholder="Repeat password" minlength="12"></label>
+          <div class="otp-status" id="resetOtpStatus" hidden>
+            <span id="resetOtpTimer">Enter OTP within 05:00</span>
+            <button class="auth-link-button" id="resendResetOtpButton" type="button" hidden>Resend OTP</button>
+          </div>
+          <button class="auth-button" id="forgotPasswordButton" type="submit">Send reset OTP</button>
+          <button class="auth-link-button auth-center-link" id="backToLoginButton" type="button">Back to login</button>
+        </form>
+        <p class="auth-message" id="authMessage" role="status"></p>
         <p class="auth-switch">New here? <a href="signup.html">Create an account</a></p>
       </div>
     </section>
