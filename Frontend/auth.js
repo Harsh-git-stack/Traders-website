@@ -1,7 +1,7 @@
 const API_BASE_URL = window.NEXFORD_API_BASE_URL ||
   (["localhost", "127.0.0.1"].includes(window.location.hostname)
-    ? "http://localhost:8084/traders-backend"
-    : `${window.location.origin}/traders-backend`);
+    ? "http://localhost:4000"
+    : window.location.origin);
 const TOKEN_KEY = "nexford-access-token";
 const USER_KEY = "nexford-user";
 
@@ -10,9 +10,9 @@ const api = {
   verifyRegistration: "/api/auth/verify-registration",
   forgotPassword: "/api/auth/forgot-password",
   resetPassword: "/api/auth/reset-password",
-  login: "/api/auth/login",
+  login: "/api/auth/userLogin",
   refresh: "/api/auth/refresh",
-  logout: "/api/auth/logout",
+  logout: "/api/auth/userLogout",
   trades: "/api/trades",
   account: "/api/trades/account",
   openTrade: "/api/trades/open",
@@ -23,11 +23,16 @@ const api = {
   adminCredit: "/api/trades/admin/credit/deposit",
   adminPassword: "/api/trades/admin/user/change-password",
   cacheSizes: "/api/trades/admin/cache-sizes",
-  clientRequests: "/api/client-requests"
+  clientRequests: "/api/client-requests",
+  transfers: "/api/transfers",
+  wallet: "/api/transfers/wallet"
 };
 
 let currentWatchlist = [];
 let latestTrades = { open: [], closed: [], balance: null };
+let latestClientRequests = [];
+let latestWalletSummary = null;
+let latestTransfers = [];
 let realtimeClient = null;
 
 function getToken() {
@@ -414,11 +419,16 @@ loginForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = new FormData(loginForm);
   const remember = Boolean(form.get("remember"));
+  const loginId = String(form.get("loginId") || form.get("email") || "").trim();
+  const password = String(form.get("password") || "");
+  const loginPayload = /^\d+$/.test(loginId)
+    ? { id: loginId, password }
+    : { email: loginId, password };
 
   try {
     const response = await backendFetch(api.login, {
       method: "POST",
-      body: JSON.stringify({ email: form.get("email"), password: form.get("password") })
+      body: JSON.stringify(loginPayload)
     }, false);
     const data = await readBody(response);
 
@@ -432,7 +442,7 @@ loginForm?.addEventListener("submit", async (event) => {
     showMessage("Login successful.", true);
     window.location.href = "dashboard.html";
   } catch {
-    showMessage("Backend not reachable. Start Spring Boot on port 8084.");
+    showMessage("Portal backend not reachable. Start Node on port 4000.");
   }
 });
 
@@ -450,8 +460,7 @@ async function loadDashboard() {
   const user = getStoredUser() || {};
   renderProfile(user);
   bindDashboardEvents();
-  connectRealtime(user);
-  await Promise.allSettled([loadAccount(), loadTrades(), loadSymbols(), loadWatchlist()]);
+  await Promise.allSettled([loadWalletSummary(), loadAccount(), loadTrades(), loadClientRequests(), loadTransfers()]);
 }
 
 function renderProfile(user) {
@@ -463,6 +472,7 @@ function renderProfile(user) {
   document.querySelector("#profileName").textContent = name;
   document.querySelector("#profileMobile") && (document.querySelector("#profileMobile").textContent = user.phone || user.mobile || "-");
   document.querySelector("#profileEmail").textContent = user.email || "-";
+  document.querySelector("#upiDepositEmail") && (document.querySelector("#upiDepositEmail").value = user.email || "");
   document.querySelector("#upiAutoEmail") && (document.querySelector("#upiAutoEmail").value = user.email || "");
   document.querySelector("#cryptoChillEmail") && (document.querySelector("#cryptoChillEmail").value = user.email || "");
   document.querySelector("#profileId").textContent = user.id || "-";
@@ -487,6 +497,7 @@ function bindDashboardEvents() {
     }
   });
   document.querySelector("#reloadTradesButton")?.addEventListener("click", loadTrades);
+  document.querySelector("#reloadRequestsButton")?.addEventListener("click", loadClientRequests);
   document.querySelector("#saveWatchlistButton")?.addEventListener("click", saveWatchlist);
   document.querySelector("#cacheSizesButton")?.addEventListener("click", loadCacheSizes);
 
@@ -535,6 +546,9 @@ function bindDashboardEvents() {
   document.querySelectorAll(".deposit-request-form, .client-request-form").forEach((form) => {
     form.addEventListener("submit", submitDepositRequest);
   });
+  document.querySelectorAll(".transfer-action-form").forEach((form) => {
+    form.addEventListener("submit", submitTransfer);
+  });
 }
 
 function activateDashboardView(viewId, activeButton = null) {
@@ -547,7 +561,7 @@ function activateDashboardView(viewId, activeButton = null) {
 
 async function refreshAll() {
   showMessage("Refreshing dashboard...", true);
-  const results = await Promise.allSettled([loadAccount(), loadTrades(), loadSymbols(), loadWatchlist()]);
+  const results = await Promise.allSettled([loadAccount(), loadTrades(), loadClientRequests(), loadWalletSummary(), loadTransfers()]);
   const failed = results.filter((result) => result.status === "rejected").length;
   showMessage(failed ? `Refresh completed with ${failed} failed request(s).` : "Dashboard refreshed.", failed === 0);
 }
@@ -560,7 +574,6 @@ async function loadAccount() {
 }
 
 function renderAccount(account = {}) {
-  document.querySelector("#metricBalance").textContent = money(account.balance);
   document.querySelector("#metricEquity").textContent = money(account.equity);
   document.querySelector("#metricFreeMargin").textContent = money(account.freeMargin);
   document.querySelector("#metricMarginLevel").textContent = `${Number(account.marginLevel || 0).toFixed(1)}%`;
@@ -569,6 +582,48 @@ function renderAccount(account = {}) {
   document.querySelector("#barEquity").textContent = money(account.equity);
   document.querySelector("#barMargin").textContent = money(account.margin);
   document.querySelector("#barFreeMargin").textContent = money(account.freeMargin);
+  renderTransferAccountSummary(account);
+}
+
+async function loadWalletSummary() {
+  const response = await backendFetch(api.wallet);
+  if (!response.ok) throw new Error("Wallet unavailable");
+  latestWalletSummary = await readBody(response);
+  renderWalletSummary(latestWalletSummary);
+}
+
+async function loadTransfers() {
+  const response = await backendFetch(api.transfers);
+  if (!response.ok) throw new Error("Transfers unavailable");
+  const data = await readBody(response);
+  latestTransfers = data.transfers || [];
+}
+
+function renderWalletSummary(summary = {}) {
+  const walletBalance = Number(summary.wallet?.balance || 0);
+  document.querySelectorAll("[data-wallet-balance]").forEach((element) => {
+    element.textContent = money(walletBalance);
+  });
+}
+
+function renderTransferAccountSummary(account = {}) {
+  const user = getStoredUser() || {};
+  const rows = document.querySelectorAll("#accountToWalletView .account-summary-box strong");
+  if (!rows.length) return;
+
+  const values = [
+    "MT5",
+    user.accountNumber || "----",
+    money(account.balance),
+    money(account.equity),
+    "1:100",
+    money(account.credit),
+    money(account.credit)
+  ];
+
+  rows.forEach((row, index) => {
+    row.textContent = values[index] ?? "----";
+  });
 }
 
 async function loadTrades() {
@@ -693,19 +748,156 @@ async function submitDepositRequest(event) {
     return;
   }
 
+  const amount = Number(payload.amount);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    showMessage("Enter a valid amount.");
+    return;
+  }
+
+  const isUpiDeposit = requestName === "UPI Deposit";
+  const isOnlineBankWithdraw = requestName === "Online Bank Withdraw";
+
+  if (!isUpiDeposit && !isOnlineBankWithdraw) {
+    showMessage("Only UPI deposits and online bank withdrawals are available right now.");
+    return;
+  }
+
+  const requestPayload = isOnlineBankWithdraw
+    ? {
+        type: "WITHDRAWAL",
+        method: "ONLINE_BANK",
+        amount,
+        utr: String(payload.accountNumber || "").trim(),
+        payerName: String(payload.accountHolderName || "").trim(),
+        phone: "",
+        email: "",
+        payload: {
+          accountHolderName: String(payload.accountHolderName || "").trim(),
+          bankName: String(payload.bankName || "").trim(),
+          accountNumber: String(payload.accountNumber || "").trim(),
+          confirmAccountNumber: String(payload.confirmAccountNumber || "").trim(),
+          ifscCode: String(payload.ifscCode || "").trim(),
+          branchName: String(payload.branchName || "").trim(),
+          tradingAccountNumber: String(payload.tradingAccountNumber || "").trim()
+        }
+      }
+    : {
+        type: "DEPOSIT",
+        method: "UPI",
+        amount,
+        utr: String(payload.utr || "").trim(),
+        payerName: String(payload.payerName || "").trim(),
+        phone: String(payload.phone || "").trim(),
+        email: String(payload.email || "").trim()
+      };
+
   try {
-    const { response } = await submitJson(api.clientRequests, "POST", {
-      requestType: requestName,
-      payload
-    }, `${requestName} request submitted.`);
+    const successText = isOnlineBankWithdraw
+      ? "Withdrawal request submitted. Status: Pending."
+      : "Deposit request submitted. Status: Pending.";
+    const { response } = await submitJson(api.clientRequests, "POST", requestPayload, successText);
 
     if (response.ok) {
       form.reset();
       renderProfile(getStoredUser() || {});
+      await loadClientRequests();
     }
   } catch {
     showMessage("Backend not reachable. Request was not saved.");
   }
+}
+
+async function submitTransfer(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const formData = new FormData(form);
+  const user = getStoredUser() || {};
+  const enteredAccount = String(formData.get("accountNumber") || "").trim();
+  const expectedAccount = user.accountNumber ? String(user.accountNumber) : "";
+  const amount = Number(formData.get("amount"));
+  const type = form.dataset.transferType;
+
+  if (!enteredAccount) {
+    showMessage("Enter your account number.");
+    return;
+  }
+
+  if (expectedAccount && enteredAccount !== expectedAccount) {
+    showMessage("Account number does not match your profile.");
+    return;
+  }
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    showMessage("Enter a valid transfer amount.");
+    return;
+  }
+
+  if (!["WALLET_TO_TRADING", "TRADING_TO_WALLET"].includes(type)) {
+    showMessage("Invalid transfer type.");
+    return;
+  }
+
+  const successText = type === "WALLET_TO_TRADING"
+    ? "Transfer to trading account completed."
+    : "Transfer to wallet completed.";
+
+  try {
+    const { response } = await submitJson(api.transfers, "POST", { type, amount }, successText);
+    if (response.ok) {
+      form.reset();
+      await Promise.allSettled([loadAccount(), loadTrades(), loadWalletSummary(), loadTransfers()]);
+    }
+  } catch {
+    showMessage("Backend not reachable. Transfer was not completed.");
+  }
+}
+
+async function loadClientRequests() {
+  const response = await backendFetch(`${api.clientRequests}/my`);
+  if (!response.ok) throw new Error("Requests unavailable");
+  const data = await readBody(response);
+  latestClientRequests = data.requests || [];
+  renderClientRequests(latestClientRequests);
+}
+
+function requestStatusClass(status) {
+  const normalized = String(status || "PENDING").toUpperCase();
+  if (normalized === "APPROVED") return "approved";
+  if (normalized === "REJECTED") return "rejected";
+  return "pending";
+}
+
+function formatRequestDate(value) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return compact(value);
+  return date.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function renderClientRequests(requests = []) {
+  const body = document.querySelector("#clientRequestsBody");
+  if (!body) return;
+
+  body.innerHTML = requests.map((request) => {
+    const status = String(request.status || "PENDING").toUpperCase();
+    return `
+      <tr>
+        <td>${formatRequestDate(request.createdAt)}</td>
+        <td>${compact(request.type)}</td>
+        <td>${compact(request.method)}</td>
+        <td>${money(request.amount)}</td>
+        <td>${compact(request.utr || request.payload?.accountNumber)}</td>
+        <td><span class="request-status ${requestStatusClass(status)}">${status}</span></td>
+        <td>${compact(request.adminNote)}</td>
+      </tr>
+    `;
+  }).join("") || `<tr><td colspan="7">No requests yet.</td></tr>`;
 }
 
 async function submitJson(path, method, payload, successText) {

@@ -633,6 +633,32 @@ tr:last-child td { border-bottom: 0; }
   gap: 8px;
 }
 
+.request-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.request-status.pending {
+  color: #332200;
+  background: #ffd36a;
+}
+
+.request-status.approved {
+  color: #04140f;
+  background: var(--auth-green);
+}
+
+.request-status.rejected {
+  color: #fff7f5;
+  background: var(--auth-danger);
+}
+
 .portal-bank-card {
   width: min(690px, 100%);
   justify-self: center;

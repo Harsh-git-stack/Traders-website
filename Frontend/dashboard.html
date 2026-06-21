@@ -39,7 +39,6 @@
         <div class="portal-submenu" id="transferMenu" hidden>
           <button class="dash-tab" type="button" data-view="walletToAccountView">Wallet To Account</button>
           <button class="dash-tab" type="button" data-view="accountToWalletView">Account To Wallet</button>
-          <button class="dash-tab" type="button" data-view="traderToTraderView">Trader To Trader</button>
         </div>
 
         <button class="portal-dropdown-toggle" type="button" data-menu="reportsMenu"><span>RP</span> Reports <b>v</b></button>
@@ -116,7 +115,7 @@
           <strong id="dashboardWelcome">Loading workspace...</strong>
         </div>
         <div class="portal-actions">
-          <span class="portal-balance">Balance: <b id="metricBalance">$0.00</b></span>
+          <span class="portal-balance">Wallet Balance: <b id="metricBalance" data-wallet-balance>$0.00</b></span>
           <button id="refreshButton" type="button">Refresh</button>
           <span>English</span>
           <button id="logoutButton" type="button">Logout</button>
@@ -260,6 +259,14 @@
               <img class="upi-scanner-img" src="assets/upi-scanner.svg" alt="UPI QR scanner">
               <span>UPI</span>
             </div>
+            <form class="online-deposit-form upi-deposit-request-form deposit-request-form" data-request-name="UPI Deposit">
+              <label>Email<input id="upiDepositEmail" name="email" type="email" placeholder="name@example.com" readonly></label>
+              <label>Amount (USD)<input name="amount" type="number" min="1" step="0.01" placeholder="100" required></label>
+              <label>UTR / Transaction ID<input name="utr" placeholder="1234567890" required></label>
+              <label>Payer name<input name="payerName" placeholder="Name used for payment" required></label>
+              <label>Phone<input name="phone" type="tel" placeholder="+91 98765 43210"></label>
+              <button class="auth-button online-submit" type="submit">Submit Deposit Request</button>
+            </form>
           </div>
         </article>
       </section>
@@ -434,8 +441,8 @@
 
       <section class="dashboard-view" id="reportsView">
         <article class="dash-panel portal-card">
-          <div class="panel-head"><div><span>Reports</span><h2>Client reports</h2></div></div>
-          <div class="table-wrap"><table><thead><tr><th>Report</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody><tr><td>UPI Report</td><td>Empty</td><td>-</td><td>View</td></tr><tr><td>Market Report</td><td>Empty</td><td>-</td><td>View</td></tr></tbody></table></div>
+          <div class="panel-head"><div><span>Reports</span><h2>Deposit status</h2></div><button class="outline-button" type="button" id="reloadRequestsButton">Reload</button></div>
+          <div class="table-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Method</th><th>Amount</th><th>UTR</th><th>Status</th><th>Admin note</th></tr></thead><tbody id="clientRequestsBody"><tr><td colspan="7">No requests yet.</td></tr></tbody></table></div>
         </article>
       </section>
 
@@ -510,7 +517,7 @@
             <label>IFSC Code<input name="ifscCode" placeholder="Example: HDFC0001234" required></label>
             <label>Branch Name<input name="branchName" placeholder="Enter branch name"></label>
             <label>Amount<input name="amount" type="number" min="1" step="0.01" placeholder="0.00" required></label>
-            <label>Transaction Password<input name="transactionPassword" type="password" placeholder="Transaction password" required></label>
+            <label>Trading Account Number<input name="tradingAccountNumber" inputmode="numeric" placeholder="Enter your trading account number" required></label>
             <button class="auth-button online-submit" type="submit">Submit Request</button>
           </form>
         </article>
@@ -709,7 +716,7 @@
       <section class="dashboard-view" id="transferView">
         <article class="dash-panel portal-bank-card">
           <div class="panel-head centered"><div><span>Transfer</span><h2>Internal transfer</h2><p>Move funds between wallet, trading account, or another trader.</p></div></div>
-          <form class="dash-form bank-form"><label>Transfer Type<select><option>Wallet To Account</option><option>Account To Wallet</option><option>Trader To Trader</option></select></label><label>Amount<input type="number" placeholder="0.00"></label><button class="auth-button" type="button">Continue Transfer</button></form>
+          <form class="dash-form bank-form"><label>Transfer Type<select><option>Wallet To Account</option><option>Account To Wallet</option></select></label><label>Amount<input type="number" placeholder="0.00"></label><button class="auth-button" type="button">Continue Transfer</button></form>
         </article>
       </section>
 
@@ -726,15 +733,14 @@
         <article class="dash-panel transfer-card">
           <div class="online-deposit-head">
             <h2>Let's Start With Your Account Information</h2>
-            <p>The Account, Withdraw Amount And Transaction Password Is Required</p>
+            <p>Enter your account number and transfer amount.</p>
           </div>
-          <form class="transfer-request-form deposit-request-form" data-request-name="Wallet To Account Transfer">
+          <form class="transfer-request-form transfer-action-form" data-transfer-type="WALLET_TO_TRADING">
             <div class="mt5-visual" aria-hidden="true"><span>5</span></div>
             <div class="transfer-fields">
-              <label>Your Account<select name="account" required><option value="">Choose An Account</option><option>Wallet</option><option>Trading Account</option></select></label>
+              <label>Account Number<input name="accountNumber" inputmode="numeric" placeholder="Enter account number" required></label>
               <label>Amount<input name="amount" type="number" min="1" step="0.01" required></label>
-              <label>Transaction Password<input name="transactionPassword" type="password" minlength="4" required></label>
-              <button class="auth-button online-submit" type="submit">Next</button>
+              <button class="auth-button online-submit" type="submit">Transfer To Account</button>
             </div>
           </form>
         </article>
@@ -753,7 +759,7 @@
         <article class="dash-panel account-wallet-card">
           <div class="online-deposit-head">
             <h2>Let's Start With Your Account Information</h2>
-            <p>The Account Number, Amount And Trasnsaction Password Is Required For Your Secure Transaction.</p>
+            <p>Enter your account number and transfer amount.</p>
           </div>
           <div class="account-wallet-layout">
             <div class="account-wallet-left">
@@ -768,42 +774,12 @@
                 <div><span>Withdrawable Bonus</span><strong>----</strong></div>
               </div>
             </div>
-            <form class="account-wallet-form deposit-request-form" data-request-name="Account To Wallet Transfer">
-              <label>Your Account<select name="account" required><option value="">Choose An Account</option><option>Trading Account</option><option>Wallet</option></select></label>
+            <form class="account-wallet-form transfer-action-form" data-transfer-type="TRADING_TO_WALLET">
+              <label>Account Number<input name="accountNumber" inputmode="numeric" placeholder="Enter account number" required></label>
               <label>Amount<input name="amount" type="number" min="1" step="0.01" required></label>
-              <label>Transaction Password<input name="transactionPassword" type="password" minlength="4" required></label>
-              <button class="auth-button online-submit monumpay-submit" type="submit">Submit Request</button>
+              <button class="auth-button online-submit monumpay-submit" type="submit">Transfer To Wallet</button>
             </form>
           </div>
-        </article>
-      </section>
-
-      <section class="dashboard-view" id="traderToTraderView">
-        <div class="bank-page-head">
-          <h2>Trader To Trader Transfer</h2>
-          <p>We Need Some Information</p>
-          <div class="bank-stepper two-stepper" aria-label="Trader to trader transfer progress">
-            <div class="active"><span></span><b>Transfer Request</b></div>
-            <div><span></span><b>Status</b></div>
-          </div>
-        </div>
-
-        <article class="dash-panel trader-transfer-card">
-          <div class="online-deposit-head">
-            <h2>Let's Start With Your Account Information</h2>
-            <p>The Recipient, Amount And Transaction Password Required For Your Secure Transaction.</p>
-          </div>
-          <form class="trader-transfer-form deposit-request-form" data-request-name="Trader To Trader Transfer">
-            <div class="trader-avatar-card" aria-hidden="true">
-              <div class="trader-avatar"><span></span></div>
-            </div>
-            <div class="transfer-fields">
-              <label>Recipient<select name="recipient" required><option value=""></option><option>Trader 1001</option><option>Trader 1002</option><option>Trader 1003</option></select></label>
-              <label>Amount<input name="amount" type="number" min="1" step="0.01" required></label>
-              <label>Transaction Password<input name="transactionPassword" type="password" minlength="4" required></label>
-              <button class="auth-button online-submit monumpay-submit" type="submit">Submit Request</button>
-            </div>
-          </form>
         </article>
       </section>
 
