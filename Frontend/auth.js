@@ -473,6 +473,8 @@ function renderProfile(user) {
   document.querySelector("#profileMobile") && (document.querySelector("#profileMobile").textContent = user.phone || user.mobile || "-");
   document.querySelector("#profileEmail").textContent = user.email || "-";
   document.querySelector("#upiDepositEmail") && (document.querySelector("#upiDepositEmail").value = user.email || "");
+  document.querySelector("#withdrawEmail") && (document.querySelector("#withdrawEmail").value = user.email || "");
+  document.querySelector("#withdrawTradingAccountNumber") && (document.querySelector("#withdrawTradingAccountNumber").value = user.accountNumber || "");
   document.querySelector("#upiAutoEmail") && (document.querySelector("#upiAutoEmail").value = user.email || "");
   document.querySelector("#cryptoChillEmail") && (document.querySelector("#cryptoChillEmail").value = user.email || "");
   document.querySelector("#profileId").textContent = user.id || "-";
@@ -769,8 +771,8 @@ async function submitDepositRequest(event) {
         amount,
         utr: String(payload.accountNumber || "").trim(),
         payerName: String(payload.accountHolderName || "").trim(),
-        phone: "",
-        email: "",
+        phone: String(payload.phone || "").trim(),
+        email: String(payload.email || "").trim(),
         payload: {
           accountHolderName: String(payload.accountHolderName || "").trim(),
           bankName: String(payload.bankName || "").trim(),
@@ -886,13 +888,17 @@ function renderClientRequests(requests = []) {
 
   body.innerHTML = requests.map((request) => {
     const status = String(request.status || "PENDING").toUpperCase();
+    const type = String(request.type || "").toUpperCase();
+    const reference = type === "WITHDRAWAL"
+      ? request.payload?.accountNumber || request.utr
+      : request.utr || request.payload?.accountNumber;
     return `
       <tr>
         <td>${formatRequestDate(request.createdAt)}</td>
         <td>${compact(request.type)}</td>
         <td>${compact(request.method)}</td>
         <td>${money(request.amount)}</td>
-        <td>${compact(request.utr || request.payload?.accountNumber)}</td>
+        <td>${compact(reference)}</td>
         <td><span class="request-status ${requestStatusClass(status)}">${status}</span></td>
         <td>${compact(request.adminNote)}</td>
       </tr>

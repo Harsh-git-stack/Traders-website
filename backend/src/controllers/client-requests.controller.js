@@ -12,20 +12,22 @@ export async function createClientRequest(req, res) {
             email,
             payload = null
         } = req.body;
+        const normalizedType = String(type || "").trim().toUpperCase();
+        const normalizedMethod = String(method || "").trim().toUpperCase();
 
-        if (!type || !method || !amount) {
+        if (!normalizedType || !normalizedMethod || !amount) {
             return res.status(400).json({
                 message: "type, method, and amount are required."
             });
         }
 
-        if (!["DEPOSIT", "WITHDRAWAL"].includes(type)) {
+        if (!["DEPOSIT", "WITHDRAWAL"].includes(normalizedType)) {
             return res.status(400).json({
                 message: "Only DEPOSIT and WITHDRAWAL requests are supported right now."
             });
         }
 
-        if (type === "DEPOSIT" && (!utr || !payerName)) {
+        if (normalizedType === "DEPOSIT" && (!utr || !payerName)) {
             return res.status(400).json({
                 message: "utr and payerName are required for deposit requests."
             });
@@ -39,21 +41,53 @@ export async function createClientRequest(req, res) {
             });
         }
 
+        if (normalizedType === "WITHDRAWAL") {
+            const bankAccountNumber = String(payload?.accountNumber || utr || "").trim();
+            const confirmAccountNumber = String(payload?.confirmAccountNumber || "").trim();
+            const tradingAccountNumber = Number(payload?.tradingAccountNumber);
+            const requiredFields = [
+                payload?.accountHolderName,
+                payload?.bankName,
+                bankAccountNumber,
+                confirmAccountNumber,
+                payload?.ifscCode,
+                payload?.tradingAccountNumber
+            ];
+
+            if (requiredFields.some((value) => !String(value || "").trim())) {
+                return res.status(400).json({
+                    message: "Bank holder name, bank name, account number, IFSC, trading account number, and amount are required for withdrawal requests."
+                });
+            }
+
+            if (bankAccountNumber !== confirmAccountNumber) {
+                return res.status(400).json({
+                    message: "Account number and confirm account number do not match."
+                });
+            }
+
+            if (!Number.isFinite(tradingAccountNumber) || tradingAccountNumber !== req.portalUser.accountNumber) {
+                return res.status(400).json({
+                    message: "Trading account number does not match your logged-in account."
+                });
+            }
+        }
+
         const request = await ClientRequest.create({
             userId: req.portalUser.id,
             accountNumber: req.portalUser.accountNumber,
             email: email || req.portalUser.email,
-            type,
-            method,
+            type: normalizedType,
+            method: normalizedMethod,
             amount: numericAmount,
-            utr: utr || payload?.accountNumber || "N/A",
-            payerName: payerName || payload?.accountHolderName || "N/A",
+            utr: String(utr || payload?.accountNumber || "N/A").trim(),
+            payerName: String(payerName || payload?.accountHolderName || "N/A").trim(),
             phone,
             payload,
             status: "PENDING"
         });
 
-        const label = type === "WITHDRAWAL" ? "Withdrawal" : "Deposit";
+        const label = normalizedType === "WITHDRAWAL" ? "Withdrawal" : "Deposit";
         return res.status(201).json({
             message: `${label} request submitted. Status: Pending.`,
             request
