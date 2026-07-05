@@ -3,7 +3,11 @@ import { env } from "./config/env.js";
 import { connectDb } from "./config/db.js";
 
 async function startServer() {
-    await connectDb();
+    if (env.skipMongo) {
+        console.warn("MongoDB connection skipped. Mongo-backed routes will not work in this mode.");
+    } else {
+        await connectDb();
+    }
 
     app.listen(env.port, () => {
         console.log(`Portal backend running on http://localhost:${env.port}`);

@@ -153,15 +153,46 @@ async function logout() {
 const signupForm = document.querySelector("#signupForm");
 let otpCountdownTimer = null;
 
+function clearSignupAutofillLeak() {
+  if (!signupForm) return;
+  const emailInput = signupForm.querySelector('input[name="email"]');
+  const passwordInput = signupForm.querySelector('input[name="password"]');
+  const confirmPasswordInput = signupForm.querySelector('input[name="confirmPassword"]');
+
+  if (emailInput && /^\d+$/.test(String(emailInput.value || "").trim())) {
+    emailInput.value = "";
+  }
+
+  if (passwordInput?.value && !confirmPasswordInput?.value) {
+    passwordInput.value = "";
+  }
+}
+
+function getSignupButton() {
+  return document.querySelector("#signupButton");
+}
+
+function getSignupOtpInput() {
+  return document.querySelector("#otpField input");
+}
+
+function syncSignupOtpButton() {
+  const signupButton = getSignupButton();
+  const otpInput = getSignupOtpInput();
+  if (!signupForm || !signupButton || signupForm.dataset.awaitingOtp !== "true") return;
+  signupButton.disabled = String(otpInput?.value || "").trim().length !== 6;
+}
+
+clearSignupAutofillLeak();
+
 function buildSignupPayload(form) {
   return {
     name: form.get("name"),
-    phone: form.get("phone"),
     email: form.get("email"),
     password: String(form.get("password") || ""),
     role: "USER",
     accountType: "LIVE",
-    brokerAccountType: form.get("accountType") || "Standard STP",
+    accountPlan: form.get("accountType") || "Standard STP",
     swap: Boolean(form.get("swap"))
   };
 }
@@ -183,7 +214,7 @@ function startOtpCountdown(expiresInMinutes = 5) {
   let remainingSeconds = Math.max(1, Number(expiresInMinutes) || 5) * 60;
   otpStatus.hidden = false;
   resendButton.hidden = true;
-  signupButton.disabled = false;
+  syncSignupOtpButton();
   otpTimer.textContent = `Enter OTP within ${formatOtpTime(remainingSeconds)}`;
 
   otpCountdownTimer = setInterval(() => {
@@ -200,6 +231,7 @@ function startOtpCountdown(expiresInMinutes = 5) {
 }
 
 async function requestSignupOtp(form) {
+  const signupButton = getSignupButton();
   const password = String(form.get("password") || "");
   const confirmPassword = String(form.get("confirmPassword") || "");
 
@@ -209,6 +241,11 @@ async function requestSignupOtp(form) {
   }
 
   try {
+    if (signupButton) {
+      signupButton.disabled = true;
+      signupButton.textContent = "Sending OTP...";
+    }
+
     const response = await backendFetch(api.register, {
       method: "POST",
       body: JSON.stringify(buildSignupPayload(form))
@@ -227,6 +264,11 @@ async function requestSignupOtp(form) {
   } catch {
     showMessage("Backend not reachable. Start Spring Boot on port 8084.");
     return false;
+  } finally {
+    if (signupButton && signupForm?.dataset.awaitingOtp !== "true") {
+      signupButton.disabled = false;
+      signupButton.textContent = "Create account";
+    }
   }
 }
 
@@ -245,20 +287,34 @@ signupForm?.addEventListener("submit", async (event) => {
     }
 
     try {
+      const signupButton = getSignupButton();
+      if (signupButton) {
+        signupButton.disabled = true;
+        signupButton.textContent = "Verifying...";
+      }
+
       const response = await backendFetch(api.verifyRegistration, {
         method: "POST",
         body: JSON.stringify({ email, otp, password: String(form.get("password") || "") })
       }, false);
       const data = await readBody(response);
       if (response.ok) {
-        const credentialMessage = data.serverUserId ? ` User ID: ${data.serverUserId}` : "";
-        showMessage(`${data.message || "Account verified. You can now log in."}${credentialMessage}`, true);
-        setTimeout(() => { window.location.href = "login.html"; }, credentialMessage ? 3000 : 1200);
+        showMessage(data.message || "User has been created.", true);
+        setTimeout(() => { window.location.href = "login.html"; }, 1800);
       } else {
         showMessage(data.message || data.error || "OTP verification failed.");
+        if (signupButton) {
+          signupButton.textContent = "Verify OTP";
+          syncSignupOtpButton();
+        }
       }
     } catch {
       showMessage("Backend not reachable. Start Spring Boot on port 8084.");
+      const signupButton = getSignupButton();
+      if (signupButton) {
+        signupButton.textContent = "Verify OTP";
+        syncSignupOtpButton();
+      }
     }
     return;
   }
@@ -273,6 +329,8 @@ document.querySelector("#resendOtpButton")?.addEventListener("click", async () =
   document.querySelector("#otpField input").value = "";
   await requestSignupOtp(form);
 });
+
+getSignupOtpInput()?.addEventListener("input", syncSignupOtpButton);
 
 const loginForm = document.querySelector("#loginForm");
 const forgotPasswordForm = document.querySelector("#forgotPasswordForm");

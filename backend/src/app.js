@@ -32,6 +32,13 @@ app.get("/health", (req, res) => {
     });
 });
 
+app.get("/api/health", (req, res) => {
+    res.json({
+        ok: true,
+        service: "nexford-backend"
+    });
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/trades", tradesRoutes);
 app.use("/api/client-requests", clientRequestRoutes);

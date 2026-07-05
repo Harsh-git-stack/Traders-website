@@ -21,6 +21,15 @@ export async function login({ email, id, password }) {
     return response.data;
 }
 
+export async function registerUser(payload) {
+    const response = await api.post("/auth/register", {
+        ...payload,
+        serverName: env.springServerName
+    });
+
+    return response.data;
+}
+
 export async function springGet(path, traderToken, params = {}) {
     const response = await api.get(path, {
         params,

@@ -20,17 +20,17 @@
       <div class="auth-card">
         <h2>Log in</h2>
         <p>Enter the account details you used during signup.</p>
-        <form class="auth-form" id="loginForm">
-          <label>Email or account number<input type="text" name="loginId" placeholder="name@example.com or 15600" required></label>
-          <label>Password<input type="password" name="password" placeholder="Your password" required></label>
+        <form class="auth-form" id="loginForm" autocomplete="on">
+          <label>Email or account number<input type="text" name="loginId" placeholder="name@example.com or 15600" autocomplete="username" required></label>
+          <label>Password<input type="password" name="password" placeholder="Your password" autocomplete="current-password" required></label>
           <div class="auth-row"><label><input type="checkbox" name="remember">Remember me</label><button class="auth-link-button" id="showForgotPassword" type="button">Forgot password?</button></div>
           <button class="auth-button" type="submit">Log in</button>
         </form>
         <form class="auth-form forgot-form" id="forgotPasswordForm" hidden>
-          <label>Email address<input type="email" name="email" placeholder="name@example.com" required></label>
-          <label id="resetOtpField" hidden>Email OTP<input type="text" name="otp" placeholder="6 digit code" inputmode="numeric" minlength="6" maxlength="6"></label>
-          <label id="newPasswordField" hidden>New password<input type="password" name="newPassword" placeholder="12 chars, A-z, number, special" minlength="12"></label>
-          <label id="confirmNewPasswordField" hidden>Confirm new password<input type="password" name="confirmNewPassword" placeholder="Repeat password" minlength="12"></label>
+          <label>Email address<input type="email" name="email" placeholder="name@example.com" autocomplete="email" required></label>
+          <label id="resetOtpField" hidden>Email OTP<input type="text" name="otp" placeholder="6 digit code" inputmode="numeric" minlength="6" maxlength="6" autocomplete="one-time-code"></label>
+          <label id="newPasswordField" hidden>New password<input type="password" name="newPassword" placeholder="12 chars, A-z, number, special" minlength="12" autocomplete="new-password"></label>
+          <label id="confirmNewPasswordField" hidden>Confirm new password<input type="password" name="confirmNewPassword" placeholder="Repeat password" minlength="12" autocomplete="new-password"></label>
           <div class="otp-status" id="resetOtpStatus" hidden>
             <span id="resetOtpTimer">Enter OTP within 05:00</span>
             <button class="auth-link-button" id="resendResetOtpButton" type="button" hidden>Resend OTP</button>

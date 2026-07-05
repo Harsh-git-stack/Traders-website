@@ -5,6 +5,7 @@ const net = require("net");
 
 const START_PORT = Number(process.env.PORT || 5500);
 const ROOT = __dirname;
+const API_TARGET = "http://127.0.0.1:4000";
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -30,6 +31,26 @@ function send(res, statusCode, body, contentType = "text/plain; charset=utf-8") 
   res.end(body);
 }
 
+function proxyApi(req, res) {
+  const target = new URL(req.url, API_TARGET);
+  const proxyReq = http.request(target, {
+    method: req.method,
+    headers: {
+      ...req.headers,
+      host: "127.0.0.1:4000"
+    }
+  }, (proxyRes) => {
+    res.writeHead(proxyRes.statusCode || 502, proxyRes.headers);
+    proxyRes.pipe(res);
+  });
+
+  proxyReq.on("error", () => {
+    send(res, 502, "Portal API unavailable");
+  });
+
+  req.pipe(proxyReq);
+}
+
 function resolveRequestPath(urlPath) {
   const cleanPath = decodeURIComponent(urlPath.split("?")[0]);
   const requestedPath = cleanPath === "/" ? "/index.html" : cleanPath;
@@ -44,6 +65,11 @@ function resolveRequestPath(urlPath) {
 }
 
 const server = http.createServer((req, res) => {
+  if ((req.url || "").startsWith("/api/")) {
+    proxyApi(req, res);
+    return;
+  }
+
   const filePath = resolveRequestPath(req.url || "/");
 
   if (!filePath) {
