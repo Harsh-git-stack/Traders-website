@@ -19,12 +19,10 @@
     <section class="auth-main">
       <div class="auth-card">
         <h2>Create account</h2>
-        <p>Create your NexFord trading account and verify it with email OTP.</p>
+        <p>Create your NexFord portal profile and verify it with email OTP.</p>
         <form class="auth-form" id="signupForm" autocomplete="off">
           <label>Full name<input type="text" name="name" placeholder="Your name" minlength="2" autocomplete="name" required></label>
           <label>Email address<input type="email" name="email" placeholder="name@example.com" autocomplete="email" required></label>
-          <label>Account type<select name="accountType" required><option value="Standard STP">Standard STP</option><option value="RAW ECN">RAW ECN</option><option value="PRO ECN">PRO ECN</option><option value="Swap Free">Swap Free</option></select></label>
-          <label class="auth-check"><input type="checkbox" name="swap" checked>Enable swap value</label>
           <label>Password<input type="password" name="password" placeholder="12 chars, A-z, number, special" minlength="12" autocomplete="new-password" required></label>
           <label>Confirm password<input type="password" name="confirmPassword" placeholder="Repeat password" minlength="12" autocomplete="new-password" required></label>
           <label id="otpField" hidden>Email OTP<input type="text" name="otp" placeholder="6 digit code" inputmode="numeric" minlength="6" maxlength="6" autocomplete="one-time-code"></label>

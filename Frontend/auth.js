@@ -11,6 +11,8 @@ const api = {
   forgotPassword: "/api/auth/forgot-password",
   resetPassword: "/api/auth/reset-password",
   login: "/api/auth/userLogin",
+  createTradingAccount: "/api/auth/trading-account",
+  tradingAccounts: "/api/auth/trading-accounts",
   refresh: "/api/auth/refresh",
   logout: "/api/auth/userLogout",
   trades: "/api/trades",
@@ -33,7 +35,15 @@ let latestTrades = { open: [], closed: [], balance: null };
 let latestClientRequests = [];
 let latestWalletSummary = null;
 let latestTransfers = [];
+let latestTradingAccounts = [];
 let realtimeClient = null;
+
+const depositBankDetails = {
+  bankName: "Apna Sahakari Bank Ltd.",
+  accountName: "Anita Enterprises",
+  accountNumber: "055012100000300",
+  ifscCode: "ASBL0000055"
+};
 
 function getToken() {
   return sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY);
@@ -190,10 +200,7 @@ function buildSignupPayload(form) {
     name: form.get("name"),
     email: form.get("email"),
     password: String(form.get("password") || ""),
-    role: "USER",
-    accountType: "LIVE",
-    accountPlan: form.get("accountType") || "Standard STP",
-    swap: Boolean(form.get("swap"))
+    role: "USER"
   };
 }
 
@@ -517,8 +524,9 @@ async function loadDashboard() {
   if (!requireAuth()) return;
   const user = getStoredUser() || {};
   renderProfile(user);
+  renderTradingAccountState(user);
   bindDashboardEvents();
-  await Promise.allSettled([loadWalletSummary(), loadAccount(), loadTrades(), loadClientRequests(), loadTransfers()]);
+  await Promise.allSettled([loadTradingAccounts(), loadWalletSummary(), loadAccount(), loadTrades(), loadClientRequests(), loadTransfers()]);
 }
 
 function renderProfile(user) {
@@ -540,6 +548,39 @@ function renderProfile(user) {
   document.querySelector("#profileAccountType").textContent = user.accountType || "-";
   document.querySelector("#profileSwap").textContent = user.swapValue === true ? "Yes" : user.swapValue === false ? "No" : "-";
   document.querySelectorAll(".admin-only").forEach((el) => { el.hidden = role !== "ADMIN"; });
+}
+
+function renderTradingAccountState(user = getStoredUser() || {}, accounts = latestTradingAccounts) {
+  const createBox = document.querySelector("#createTradingAccountBox");
+  const tableBody = document.querySelector("#tradingAccountsBody");
+  const selectedId = user.selectedTradingAccountId;
+  const existingTypes = new Set((accounts || []).map((account) => String(account.accountType || "").toUpperCase()));
+  const missingTypes = ["DEMO", "LIVE"].filter((type) => !existingTypes.has(type));
+  const hasTradingAccount = Boolean(user.accountNumber);
+
+  if (createBox) {
+    createBox.hidden = missingTypes.length === 0;
+    const select = createBox.querySelector('select[name="accountType"]');
+    if (select) {
+      select.innerHTML = missingTypes.map((type) => (
+        `<option value="${type}">${type === "DEMO" ? "Demo account - $5,000" : "Live account - $0"}</option>`
+      )).join("");
+    }
+  }
+  if (!tableBody) return;
+
+  tableBody.innerHTML = accounts?.length
+    ? accounts.map((account) => {
+        const isSelected = String(account.id) === String(selectedId);
+        return `<tr>
+          <td>${compact(account.accountNumber)}</td>
+          <td>${compact(account.accountType)}</td>
+          <td>${compact(account.accountPlanName || account.accountPlan)}</td>
+          <td>${account.isBlocked ? "Blocked" : isSelected ? "Selected" : "Available"}</td>
+          <td>${isSelected ? "In use" : `<button class="outline-button select-trading-account" type="button" data-account-id="${account.id}">Use this account</button>`}</td>
+        </tr>`;
+      }).join("")
+    : `<tr><td colspan="5">No trading account available. Create Demo or Live above.</td></tr>`;
 }
 
 function bindDashboardEvents() {
@@ -609,6 +650,13 @@ function bindDashboardEvents() {
   document.querySelectorAll(".transfer-action-form").forEach((form) => {
     form.addEventListener("submit", submitTransfer);
   });
+  document.querySelector("#createTradingAccountForm")?.addEventListener("submit", submitCreateTradingAccount);
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest(".select-trading-account");
+    if (!button) return;
+    event.preventDefault();
+    submitSelectTradingAccount(button.dataset.accountId);
+  });
 }
 
 function activateDashboardView(viewId, activeButton = null) {
@@ -621,13 +669,25 @@ function activateDashboardView(viewId, activeButton = null) {
 
 async function refreshAll() {
   showMessage("Refreshing dashboard...", true);
-  const results = await Promise.allSettled([loadAccount(), loadTrades(), loadClientRequests(), loadWalletSummary(), loadTransfers()]);
+  const results = await Promise.allSettled([loadTradingAccounts(), loadAccount(), loadTrades(), loadClientRequests(), loadWalletSummary(), loadTransfers()]);
   const failed = results.filter((result) => result.status === "rejected").length;
   showMessage(failed ? `Refresh completed with ${failed} failed request(s).` : "Dashboard refreshed.", failed === 0);
 }
 
+async function loadTradingAccounts() {
+  const response = await backendFetch(api.tradingAccounts);
+  if (!response.ok) throw new Error("Trading accounts unavailable");
+  const data = await readBody(response);
+  latestTradingAccounts = data.accounts || [];
+  renderTradingAccountState(getStoredUser() || {}, latestTradingAccounts);
+}
+
 async function loadAccount() {
   const response = await backendFetch(api.account);
+  if (response.status === 409) {
+    renderAccount({});
+    return;
+  }
   if (!response.ok) throw new Error("Account unavailable");
   const account = await readBody(response);
   renderAccount(account);
@@ -688,6 +748,10 @@ function renderTransferAccountSummary(account = {}) {
 
 async function loadTrades() {
   const response = await backendFetch(api.trades);
+  if (response.status === 409) {
+    renderTrades({ open: [], closed: [], balance: null });
+    return;
+  }
   if (!response.ok) throw new Error("Trades unavailable");
   latestTrades = await readBody(response);
   renderTrades(latestTrades);
@@ -848,7 +912,10 @@ async function submitDepositRequest(event) {
         utr: String(payload.utr || "").trim(),
         payerName: String(payload.payerName || "").trim(),
         phone: String(payload.phone || "").trim(),
-        email: String(payload.email || "").trim()
+        email: String(payload.email || "").trim(),
+        payload: {
+          beneficiary: depositBankDetails
+        }
       };
 
   try {
@@ -864,6 +931,70 @@ async function submitDepositRequest(event) {
     }
   } catch {
     showMessage("Backend not reachable. Request was not saved.");
+  }
+}
+
+async function submitCreateTradingAccount(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const formData = new FormData(form);
+  const accountType = String(formData.get("accountType") || "").toUpperCase();
+  const password = String(formData.get("password") || "");
+
+  try {
+    const response = await backendFetch(api.createTradingAccount, {
+      method: "POST",
+      body: JSON.stringify({ accountType, password })
+    });
+    const data = await readBody(response);
+
+    if (!response.ok) {
+      showMessage(data.message || "Could not create trading account.");
+      return;
+    }
+
+    const remember = Boolean(localStorage.getItem(TOKEN_KEY));
+    setToken(data.token, remember);
+    setStoredUser(data.user, remember);
+    form.reset();
+    renderProfile(data.user);
+    latestTradingAccounts = data.user?.tradingAccounts || latestTradingAccounts;
+    renderTradingAccountState(data.user, latestTradingAccounts);
+    showMessage(data.message || "Trading account created.", true);
+    await Promise.allSettled([loadTradingAccounts(), loadWalletSummary(), loadAccount(), loadTrades()]);
+  } catch {
+    showMessage("Portal backend not reachable. Start Node on port 4000.");
+  }
+}
+
+async function submitSelectTradingAccount(accountId) {
+  if (!accountId) return;
+
+  const password = window.prompt("Enter your portal password to switch trading account");
+  if (!password) return;
+
+  try {
+    const response = await backendFetch(`${api.tradingAccounts}/${encodeURIComponent(accountId)}/select`, {
+      method: "POST",
+      body: JSON.stringify({ password })
+    });
+    const data = await readBody(response);
+
+    if (!response.ok) {
+      showMessage(data.message || "Could not select trading account.");
+      return;
+    }
+
+    const remember = Boolean(localStorage.getItem(TOKEN_KEY));
+    setToken(data.token, remember);
+    setStoredUser(data.user, remember);
+    latestTradingAccounts = data.user?.tradingAccounts || latestTradingAccounts;
+    renderProfile(data.user);
+    renderTradingAccountState(data.user, latestTradingAccounts);
+    showMessage(data.message || "Trading account selected.", true);
+    await Promise.allSettled([loadWalletSummary(), loadAccount(), loadTrades()]);
+  } catch {
+    showMessage("Portal backend not reachable. Account was not selected.");
   }
 }
 

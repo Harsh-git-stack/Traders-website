@@ -1129,6 +1129,77 @@ body.dark .theme-dot {
   line-height: 1.7;
 }
 
+.downloads-section {
+  background: color-mix(in srgb, var(--bg) 72%, var(--surface));
+}
+
+.download-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.download-card {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 18px;
+  min-height: 100%;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 0 10px 32px rgba(16, 21, 20, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.download-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 0%), rgba(19, 185, 143, 0.18), transparent 36%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+
+.download-card:hover::after {
+  opacity: 1;
+}
+
+.download-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--primary) 20%, transparent);
+  color: var(--primary-dark);
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.download-icon.desktop {
+  background: rgba(64, 120, 216, 0.14);
+  color: var(--blue);
+}
+
+.download-card h3 {
+  margin: 0 0 10px;
+  font-size: 28px;
+}
+
+.download-card p,
+.download-card li {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.download-card ul {
+  margin: 18px 0 0;
+  padding-left: 20px;
+}
+
 .account-grid {
   grid-template-columns: repeat(4, 1fr);
   margin-top: 24px;
@@ -2588,7 +2659,8 @@ body.dark .theme-dot {
 
   .market-grid,
   .account-grid,
-  .academy-grid {
+  .academy-grid,
+  .download-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
@@ -2713,6 +2785,7 @@ body.dark .theme-dot {
   .market-grid,
   .account-grid,
   .academy-grid,
+  .download-grid,
   .intel-grid,
   .insights-grid,
   .screener-grid,

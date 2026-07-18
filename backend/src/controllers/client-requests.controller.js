@@ -66,6 +66,12 @@ export async function createClientRequest(req, res) {
                 });
             }
 
+            if (!req.portalUser.accountNumber) {
+                return res.status(409).json({
+                    message: "Please create or select a trading account before requesting withdrawal."
+                });
+            }
+
             if (!Number.isFinite(tradingAccountNumber) || tradingAccountNumber !== req.portalUser.accountNumber) {
                 return res.status(400).json({
                     message: "Trading account number does not match your logged-in account."
@@ -74,7 +80,7 @@ export async function createClientRequest(req, res) {
         }
 
         const request = await ClientRequest.create({
-            userId: req.portalUser.id,
+            userId: req.portalUser.portalUserId || req.portalUser.id,
             accountNumber: req.portalUser.accountNumber,
             email: email || req.portalUser.email,
             type: normalizedType,
@@ -102,7 +108,7 @@ export async function createClientRequest(req, res) {
 export async function getMyClientRequests(req, res) {
     try {
         const requests = await ClientRequest.find({
-            userId: req.portalUser.id
+            userId: req.portalUser.portalUserId || req.portalUser.id
         })
             .sort({ createdAt: -1 })
             .limit(50)

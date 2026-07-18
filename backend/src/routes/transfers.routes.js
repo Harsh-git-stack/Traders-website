@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { requirePortalAuth } from "../middleware/auth.middleware.js";
+import { requirePortalAuth, requireTradingAccount } from "../middleware/auth.middleware.js";
 import {
     createTransfer,
     getWalletSummary,
@@ -10,6 +10,6 @@ const router = Router();
 
 router.get("/wallet", requirePortalAuth, getWalletSummary);
 router.get("/", requirePortalAuth, listTransfers);
-router.post("/", requirePortalAuth, createTransfer);
+router.post("/", requirePortalAuth, requireTradingAccount, createTransfer);
 
 export default router;

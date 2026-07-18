@@ -254,6 +254,12 @@
             <h2>UPI Deposit</h2>
             <p>Scan the QR code and submit your transaction details for approval.</p>
           </div>
+          <div class="payment-details-card" aria-label="Bank payment details">
+            <div><strong>Bank Name</strong><span>Apna Sahakari Bank Ltd.</span></div>
+            <div><strong>Account Name</strong><span>Anita Enterprises</span></div>
+            <div><strong>Account Number</strong><span>055012100000300</span></div>
+            <div><strong>IFSC Code</strong><span>ASBL0000055</span></div>
+          </div>
           <div class="upi-scanner-layout">
             <div class="upi-qr-box" aria-label="UPI scanner preview">
               <img class="upi-scanner-img" src="assets/upi-scanner.svg" alt="UPI QR scanner">
@@ -290,16 +296,13 @@
             <button class="auth-button online-submit" type="submit">Continue</button>
           </form>
           <div class="bank-details">
-            <div><strong>Bank Name</strong><span>---</span></div>
-            <div><strong>Account Name</strong><span>---</span></div>
-            <div><strong>Account Number</strong><span>---</span></div>
-            <div><strong>Swift Code</strong><span>---</span></div>
-            <div><strong>Routing Number</strong><span>---</span></div>
-            <div><strong>Bank Country</strong><span>---</span></div>
-            <div><strong>Bank Address</strong><span>---</span></div>
-            <div><strong>Currency</strong><span>---</span></div>
-            <div><strong>Minimum Deposit</strong><span>---</span></div>
-            <div><strong>Note</strong><span>---</span></div>
+            <div><strong>Bank Name</strong><span>Apna Sahakari Bank Ltd.</span></div>
+            <div><strong>Account Name</strong><span>Anita Enterprises</span></div>
+            <div><strong>Account Number</strong><span>055012100000300</span></div>
+            <div><strong>IFSC Code</strong><span>ASBL0000055</span></div>
+            <div><strong>Bank Country</strong><span>India</span></div>
+            <div><strong>Currency</strong><span>INR</span></div>
+            <div><strong>Note</strong><span>Transfer to this account, then submit the UTR / transaction ID in the deposit form.</span></div>
           </div>
         </article>
       </section>
@@ -456,8 +459,17 @@
 
       <section class="dashboard-view" id="tradingAccountsView">
         <article class="dash-panel portal-card">
-          <div class="panel-head"><div><span>Trading Accounts</span><h2>Account workspace</h2></div><button class="auth-button portal-small-button" type="button">Open Account</button></div>
-          <div class="table-wrap"><table><thead><tr><th>Account</th><th>Type</th><th>Leverage</th><th>Status</th><th>Action</th></tr></thead><tbody><tr><td colspan="5">No trading account available</td></tr></tbody></table></div>
+          <div class="panel-head"><div><span>Trading Accounts</span><h2>Account workspace</h2></div></div>
+          <div id="createTradingAccountBox" class="create-account-box">
+            <h3>Create your trading account</h3>
+            <p>Choose Demo to start with $5,000 virtual balance, or Live to start with $0 and fund it from your wallet.</p>
+            <form class="dash-form create-account-form" id="createTradingAccountForm">
+              <label>Account mode<select name="accountType" required><option value="DEMO">Demo account - $5,000</option><option value="LIVE">Live account - $0</option></select></label>
+              <label>Confirm password<input name="password" type="password" autocomplete="current-password" placeholder="Enter your portal password" required></label>
+              <button class="auth-button online-submit" type="submit">Create Trading Account</button>
+            </form>
+          </div>
+          <div class="table-wrap" id="tradingAccountTableWrap"><table><thead><tr><th>Account</th><th>Type</th><th>Plan</th><th>Status</th><th>Action</th></tr></thead><tbody id="tradingAccountsBody"><tr><td colspan="5">No trading account available</td></tr></tbody></table></div>
         </article>
       </section>
 
