@@ -1998,16 +1998,66 @@ tr:last-child td { border-bottom: 0; }
   .auth-scene { min-height: 330px; border-right: 0; border-bottom: 1px solid var(--auth-line); }
   .auth-main { padding-block: 54px; }
   .portal-shell {
-    grid-template-columns: 1fr;
+    display: block;
+    padding: 12px;
   }
   .portal-sidebar {
-    position: static;
-    max-height: none;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    max-height: 42dvh;
+    overflow: auto;
+    margin-bottom: 14px;
+    padding: 12px;
+    overscroll-behavior: contain;
+  }
+  .portal-logo {
+    min-height: 48px;
+    padding: 0 6px 12px;
+  }
+  .portal-menu {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    padding: 12px 0 0;
+  }
+  .portal-menu .dash-tab,
+  .portal-menu a,
+  .portal-dropdown-toggle {
+    min-height: 40px;
+    padding: 0 10px;
+    gap: 8px;
+    font-size: 12px;
+  }
+  .portal-submenu {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid var(--auth-line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .portal-submenu .dash-tab {
+    min-height: 34px;
+    padding-left: 10px;
+  }
+  .portal-menu-label {
+    grid-column: 1 / -1;
+    padding: 10px 8px 4px;
+  }
+  .partner-box {
+    display: none;
   }
   .portal-topbar,
   .portal-actions {
     align-items: stretch;
     flex-direction: column;
+  }
+  .portal-main {
+    gap: 14px;
+  }
+  .portal-topbar {
+    padding: 14px;
   }
   .portal-profile-grid {
     grid-template-columns: 1fr;
@@ -2102,8 +2152,34 @@ tr:last-child td { border-bottom: 0; }
   .auth-scene, .auth-main { padding: 24px 18px; }
   .auth-copy h1 { font-size: 42px; }
   .auth-row, .dashboard-head { align-items: flex-start; grid-template-columns: 1fr; flex-direction: column; }
-  .dashboard-shell { padding: 16px; }
-  .portal-shell { padding: 12px; }
+  .dashboard-shell { padding: 0; }
+  .portal-shell { padding: 10px; }
+  .portal-sidebar {
+    max-height: 36dvh;
+  }
+  .portal-menu {
+    grid-template-columns: 1fr;
+  }
+  .portal-submenu {
+    grid-template-columns: 1fr;
+  }
+  .portal-topbar {
+    gap: 12px;
+  }
+  .portal-balance {
+    min-height: 38px;
+    white-space: normal;
+    text-align: center;
+  }
+  .dash-panel {
+    padding: 14px;
+  }
+  .panel-head h2 {
+    font-size: 24px;
+  }
+  .portal-table-tools {
+    margin: 18px 0 12px;
+  }
   .bank-details div {
     grid-template-columns: 1fr;
   }
