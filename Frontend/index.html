@@ -90,8 +90,12 @@
       <div class="container">
         <div class="offer-slider reveal">
           <button class="offer-nav offer-prev" type="button" aria-label="Previous offer">&lt;</button>
-          <img src="assets/Offer.jpeg" alt="NexfordMarket trading offer">
+          <div class="offer-track" id="offerTrack">
+            <img class="offer-slide active" src="assets/Offer.jpeg" alt="NexfordMarket trading offer">
+            <img class="offer-slide" src="assets/Offer2.png" alt="NexfordMarket trending trading offer">
+          </div>
           <button class="offer-nav offer-next" type="button" aria-label="Next offer">&gt;</button>
+          <div class="offer-dots" id="offerDots" aria-label="Offer carousel navigation"></div>
         </div>
       </div>
     </section>
@@ -349,7 +353,8 @@
             <div class="insight-top"><span>Payment Methods</span><strong>USD</strong></div>
             <div class="payment-grid">
               <span>Bank</span><span>Cards</span><span>Wallet</span><span>Crypto</span><span>Wire</span><span>Local
-                Pay</span></div>
+                Pay</span>
+            </div>
           </article>
           <article class="insight-card reveal">
             <div class="insight-top"><span>Client Area</span><strong>Secure</strong></div>
@@ -400,7 +405,8 @@
               pips</strong><strong>Custom</strong><strong>Selected instruments</strong></div>
           <div class="compare-row">
             <span>Commission</span><strong>No</strong><strong>Low</strong><strong>Custom</strong><strong>No swap
-              charges</strong></div>
+              charges</strong>
+          </div>
           <div class="compare-row"><span>Support
               level</span><strong>Standard</strong><strong>Priority</strong><strong>Dedicated</strong><strong>Standard</strong>
           </div>

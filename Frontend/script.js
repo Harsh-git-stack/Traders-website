@@ -99,6 +99,63 @@ if (tickerTrack && markets.length) {
   tickerItems.forEach((item) => tickerTrack.appendChild(item));
 }
 
+const offerSlider = document.querySelector(".offer-slider");
+const offerSlides = document.querySelectorAll(".offer-slide");
+const offerPrev = document.querySelector(".offer-prev");
+const offerNext = document.querySelector(".offer-next");
+const offerDots = document.querySelector("#offerDots");
+let offerIndex = 0;
+let offerTimer = null;
+
+function showOffer(index) {
+  if (!offerSlides.length) return;
+  offerIndex = (index + offerSlides.length) % offerSlides.length;
+  offerSlides.forEach((slide, current) => {
+    slide.classList.toggle("active", current === offerIndex);
+  });
+  offerDots?.querySelectorAll(".offer-dot").forEach((dot, current) => {
+    dot.classList.toggle("active", current === offerIndex);
+    dot.setAttribute("aria-current", current === offerIndex ? "true" : "false");
+  });
+}
+
+function startOfferCarousel() {
+  if (offerSlides.length < 2) return;
+  clearInterval(offerTimer);
+  offerTimer = setInterval(() => showOffer(offerIndex + 1), 4500);
+}
+
+if (offerSlider && offerSlides.length) {
+  offerSlides.forEach((_, index) => {
+    const dot = document.createElement("button");
+    dot.className = "offer-dot";
+    dot.type = "button";
+    dot.setAttribute("aria-label", `Show offer ${index + 1}`);
+    dot.addEventListener("click", () => {
+      showOffer(index);
+      startOfferCarousel();
+    });
+    offerDots?.appendChild(dot);
+  });
+
+  offerPrev?.addEventListener("click", () => {
+    showOffer(offerIndex - 1);
+    startOfferCarousel();
+  });
+
+  offerNext?.addEventListener("click", () => {
+    showOffer(offerIndex + 1);
+    startOfferCarousel();
+  });
+
+  offerSlider.addEventListener("mouseenter", () => clearInterval(offerTimer));
+  offerSlider.addEventListener("mouseleave", startOfferCarousel);
+  offerSlider.addEventListener("touchstart", () => clearInterval(offerTimer), { passive: true });
+  offerSlider.addEventListener("touchend", startOfferCarousel);
+  showOffer(0);
+  startOfferCarousel();
+}
+
 const screenerData = [];
 // const screenerData = [
 //   { symbol: "GBP/USD", name: "Pound Dollar", type: "forex", price: "1.2704", change: "+0.18%", spread: "0.1", bars: [36, 68, 52, 80, 64, 92] },
