@@ -16,7 +16,7 @@ const clientRequestSchema = new mongoose.Schema(
         },
         type: {
             type: String,
-            enum: ["DEPOSIT", "WITHDRAWAL", "SUPPORT"],
+            enum: ["DEPOSIT", "WITHDRAWAL", "SUPPORT", "REWARD_REDEMPTION"],
             required: true
         },
         method: {

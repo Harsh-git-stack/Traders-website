@@ -22,6 +22,7 @@ export function requirePortalAuth(req, res, next) {
             traderToken: payload.traderToken,
             accountNumber: payload.accountNumber,
             email: payload.email,
+            referredByName: payload.referredByName,
             hasTradingAccount: Boolean(payload.traderToken && payload.accountNumber)
         };
 

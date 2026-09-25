@@ -13,6 +13,7 @@ const MAX_OTP_ATTEMPTS = 5;
 const HASH_ITERATIONS = 120000;
 const HASH_KEY_LENGTH = 64;
 const HASH_DIGEST = "sha512";
+const REF_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 function normalizeEmail(email = "") {
     return String(email).trim().toLowerCase();
@@ -27,6 +28,35 @@ function hashOtp(otp) {
 
 function generateOtp() {
     return String(crypto.randomInt(100000, 1000000));
+}
+
+function normalizeReferralCode(value = "") {
+    return String(value || "").trim().toUpperCase();
+}
+
+async function generateReferralCode() {
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+        let code = "NXF";
+        for (let i = 0; i < 7; i += 1) {
+            code += REF_ALPHABET[crypto.randomInt(0, REF_ALPHABET.length)];
+        }
+
+        if (!await PortalUser.exists({ referralCode: code })) {
+            return code;
+        }
+    }
+
+    throw new Error("Could not generate referral code.");
+}
+
+async function ensurePortalReferralCode(portalUser) {
+    if (!portalUser || portalUser.referralCode) {
+        return portalUser;
+    }
+
+    portalUser.referralCode = await generateReferralCode();
+    await portalUser.save();
+    return portalUser;
 }
 
 function hashPassword(password) {
@@ -64,7 +94,8 @@ function getRegistrationPayload(body = {}) {
         role: body.role || "USER",
         accountType: body.accountType || "LIVE",
         accountPlan: body.accountPlan || body.brokerAccountType || body.plan || body.accountCategory || "Standard STP",
-        swap: Boolean(body.swap)
+        swap: Boolean(body.swap),
+        referralCode: normalizeReferralCode(body.referralCode || body.ref)
     };
 }
 
@@ -109,6 +140,10 @@ function getUser(user = {}, selectedAccount = null, accounts = []) {
         accountType: selectedAccount?.accountType || user.accountType,
         accountPlan: selectedAccount?.accountPlan || user.accountPlan,
         accountPlanName: selectedAccount?.accountPlanName || user.accountPlanName,
+        referralCode: user.referralCode,
+        referredByCode: user.referredByCode,
+        referredByUserId: user.referredByUserId,
+        referredByName: user.referredByName,
         swapValue: user.swapValue,
         isBlocked: selectedAccount?.isBlocked ?? user.isBlocked,
         selectedTradingAccountId: selectedAccount?._id?.toString?.() || user.selectedTradingAccountId || null,
@@ -126,6 +161,7 @@ function signPortalToken({ portalUser, selectedAccount = null, traderToken = nul
             traderToken,
             accountNumber: selectedAccount?.accountNumber || portalUser.accountNumber || null,
             email: portalUser.email,
+            referredByName: portalUser.referredByName || null,
             hasTradingAccount: Boolean(selectedAccount?.accountNumber && traderToken)
         },
         env.portalJwtSecret,
@@ -155,6 +191,13 @@ async function getSelectedAccount(portalUser, accounts = null) {
 
 async function syncPortalUserFromSpring(user, passwordHash = null) {
     const email = normalizeEmail(user.email);
+    const accountNumber = Number(user.accountNumber);
+    const existingAccount = Number.isFinite(accountNumber)
+        ? await PortalTradingAccount.findOne({ accountNumber })
+        : null;
+    const existingPortalUser = existingAccount
+        ? await PortalUser.findById(existingAccount.portalUserId)
+        : await PortalUser.findOne({ email });
     const update = {
         name: user.name,
         email,
@@ -164,41 +207,68 @@ async function syncPortalUserFromSpring(user, passwordHash = null) {
         accountType: user.accountType,
         accountPlan: user.accountPlan,
         accountPlanName: user.accountPlanName,
+        referralCode: user.referralCode,
+        referredByCode: user.referredByCode,
+        referredByUserId: user.referredByUserId,
+        referredByName: user.referredByName,
         swapValue: user.swapValue,
         isBlocked: user.isBlocked
     };
 
     if (passwordHash) update.passwordHash = passwordHash;
 
-    return PortalUser.findOneAndUpdate(
-        { email },
-        { $set: update, $setOnInsert: { passwordHash: passwordHash || crypto.randomUUID() } },
-        { new: true, upsert: true }
-    ).then(async (portalUser) => {
-        const account = await PortalTradingAccount.findOneAndUpdate(
-            { accountNumber: user.accountNumber },
-            {
-                $set: {
-                    portalUserId: portalUser._id.toString(),
-                    tradingUserId: user.id,
-                    accountNumber: user.accountNumber,
-                    accountType: String(user.accountType || "LIVE").toUpperCase(),
-                    accountPlan: user.accountPlan,
-                    accountPlanName: user.accountPlanName,
-                    springEmail: user.email,
-                    isBlocked: user.isBlocked
-                }
-            },
-            { new: true, upsert: true }
+    const portalUser = existingPortalUser
+        ? await PortalUser.findByIdAndUpdate(
+            existingPortalUser._id,
+            { $set: update },
+            { new: true }
+        )
+        : await PortalUser.create({
+            ...update,
+            passwordHash: passwordHash || crypto.randomUUID()
+        });
+
+    const accountUpdate = {
+        portalUserId: portalUser._id.toString(),
+        tradingUserId: user.id,
+        accountNumber: user.accountNumber,
+        accountType: String(user.accountType || "LIVE").toUpperCase(),
+        accountPlan: user.accountPlan,
+        accountPlanName: user.accountPlanName,
+        springEmail: user.email,
+        isBlocked: user.isBlocked
+    };
+
+    let account = existingAccount;
+
+    if (account) {
+        account = await PortalTradingAccount.findByIdAndUpdate(
+            account._id,
+            { $set: accountUpdate },
+            { new: true }
         );
+    } else {
+        try {
+            account = await PortalTradingAccount.create(accountUpdate);
+        } catch (error) {
+            if (error?.code !== 11000) {
+                throw error;
+            }
 
-        if (!portalUser.selectedTradingAccountId) {
-            portalUser.selectedTradingAccountId = account._id.toString();
-            await portalUser.save();
+            account = await PortalTradingAccount.findOneAndUpdate(
+                { accountNumber: user.accountNumber },
+                { $set: accountUpdate },
+                { new: true, upsert: true }
+            );
         }
+    }
 
-        return portalUser;
-    });
+    if (!portalUser.selectedTradingAccountId && account) {
+        portalUser.selectedTradingAccountId = account._id.toString();
+        await portalUser.save();
+    }
+
+    return portalUser;
 }
 
 export async function userLogin(req, res) {
@@ -231,6 +301,7 @@ export async function userLogin(req, res) {
             let traderToken = null;
             const accounts = await getPortalAccounts(portalUser._id.toString());
             const selectedAccount = accountLogin || await getSelectedAccount(portalUser, accounts);
+            await ensurePortalReferralCode(portalUser);
 
             if (selectedAccount?.accountNumber) {
                 try {
@@ -371,11 +442,26 @@ export async function verifyRegistrationOtp(req, res) {
             });
         }
 
+        const referrer = pending.payload.referralCode
+            ? await PortalUser.findOne({ referralCode: pending.payload.referralCode })
+            : null;
+
+        if (pending.payload.referralCode && !referrer) {
+            pendingRegistrations.delete(email);
+            return res.status(400).json({
+                message: "Invalid referral code."
+            });
+        }
+
         await PortalUser.create({
             name: pending.payload.name,
             email: pending.payload.email,
             passwordHash: hashPassword(pending.payload.password),
             role: "USER",
+            referralCode: await generateReferralCode(),
+            referredByCode: referrer ? pending.payload.referralCode : null,
+            referredByUserId: referrer?._id?.toString?.() || null,
+            referredByName: referrer?.name || null,
             swapValue: pending.payload.swap
         });
         pendingRegistrations.delete(email);
@@ -533,6 +619,10 @@ export async function createTradingAccount(req, res) {
         }
 
         const springEmail = springEmailForAccount(portalUser.email, accountType);
+        const referrerPortalUser = portalUser.referredByUserId
+            ? await PortalUser.findById(portalUser.referredByUserId)
+            : null;
+        const springReferrerUserId = referrerPortalUser?.tradingUserId || null;
         const registeredUser = await registerUser({
             name: portalUser.name,
             email: springEmail,
@@ -540,7 +630,9 @@ export async function createTradingAccount(req, res) {
             role: "USER",
             accountType,
             accountPlan: "STANDARD_STP",
-            swap: portalUser.swapValue
+            swap: portalUser.swapValue,
+            referralCode: springReferrerUserId ? portalUser.referredByCode : null,
+            referredByUserId: springReferrerUserId
         });
 
         const user = registeredUser?.user || registeredUser || {};

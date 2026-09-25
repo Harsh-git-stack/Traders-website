@@ -1,4 +1,6 @@
 import { ClientRequest } from "../models/client-request.model.js";
+import { PortalUser } from "../models/portal-user.model.js";
+import { RewardBalance } from "../models/reward-balance.model.js";
 
 export async function createClientRequest(req, res) {
     try {
@@ -21,9 +23,9 @@ export async function createClientRequest(req, res) {
             });
         }
 
-        if (!["DEPOSIT", "WITHDRAWAL"].includes(normalizedType)) {
+        if (!["DEPOSIT", "WITHDRAWAL", "REWARD_REDEMPTION"].includes(normalizedType)) {
             return res.status(400).json({
-                message: "Only DEPOSIT and WITHDRAWAL requests are supported right now."
+                message: "Only DEPOSIT, WITHDRAWAL, and REWARD_REDEMPTION requests are supported right now."
             });
         }
 
@@ -34,6 +36,7 @@ export async function createClientRequest(req, res) {
         }
 
         const numericAmount = Number(amount);
+        const requestUserId = req.portalUser.id || req.portalUser.portalUserId;
 
         if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
             return res.status(400).json({
@@ -79,8 +82,25 @@ export async function createClientRequest(req, res) {
             }
         }
 
+        if (normalizedType === "REWARD_REDEMPTION") {
+            if (!req.portalUser.hasTradingAccount) {
+                return res.status(409).json({
+                    message: "Please create or select a trading account before redeeming rewards."
+                });
+            }
+
+            const reward = await RewardBalance.findOne({ userId: requestUserId });
+            const available = Number(reward?.balance || 0);
+
+            if (available < numericAmount) {
+                return res.status(409).json({
+                    message: "Insufficient reward balance."
+                });
+            }
+        }
+
         const request = await ClientRequest.create({
-            userId: req.portalUser.portalUserId || req.portalUser.id,
+            userId: requestUserId,
             accountNumber: req.portalUser.accountNumber,
             email: email || req.portalUser.email,
             type: normalizedType,
@@ -93,7 +113,11 @@ export async function createClientRequest(req, res) {
             status: "PENDING"
         });
 
-        const label = normalizedType === "WITHDRAWAL" ? "Withdrawal" : "Deposit";
+        const label = normalizedType === "WITHDRAWAL"
+            ? "Withdrawal"
+            : normalizedType === "REWARD_REDEMPTION"
+                ? "Reward redemption"
+                : "Deposit";
         return res.status(201).json({
             message: `${label} request submitted. Status: Pending.`,
             request
@@ -107,8 +131,12 @@ export async function createClientRequest(req, res) {
 
 export async function getMyClientRequests(req, res) {
     try {
+        const userIds = Array.from(new Set([
+            req.portalUser.id,
+            req.portalUser.portalUserId
+        ].filter(Boolean)));
         const requests = await ClientRequest.find({
-            userId: req.portalUser.portalUserId || req.portalUser.id
+            userId: { $in: userIds }
         })
             .sort({ createdAt: -1 })
             .limit(50)
@@ -120,6 +148,97 @@ export async function getMyClientRequests(req, res) {
     } catch {
         return res.status(500).json({
             message: "Could not load requests."
+        });
+    }
+}
+
+export async function getRewardSummary(req, res) {
+    try {
+        const reward = req.portalUser.id
+            ? await RewardBalance.findOne({ userId: req.portalUser.id }).lean()
+            : null;
+
+        return res.json({
+            rewards: {
+                balance: Number(reward?.balance || 0),
+                totalEarned: Number(reward?.totalEarned || 0),
+                totalRedeemed: Number(reward?.totalRedeemed || 0),
+                currency: reward?.currency || "USD"
+            }
+        });
+    } catch {
+        return res.status(500).json({
+            message: "Could not load rewards."
+        });
+    }
+}
+
+export async function getReferralSummary(req, res) {
+    try {
+        const portalUserId = req.portalUser.portalUserId;
+        const currentUser = portalUserId
+            ? await PortalUser.findById(portalUserId).lean()
+            : null;
+        const referredUsers = await PortalUser.find({ referredByUserId: portalUserId })
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const summaries = await Promise.all(referredUsers.map(async (user) => {
+            const userIds = Array.from(new Set([
+                user._id?.toString?.(),
+                user.portalUserId,
+                user.tradingUserId
+            ].filter(Boolean)));
+
+            const requests = await ClientRequest.find({
+                userId: { $in: userIds },
+                type: { $in: ["DEPOSIT", "WITHDRAWAL"] }
+            })
+                .sort({ createdAt: -1 })
+                .lean();
+
+            const approved = requests.filter((request) =>
+                String(request.status || "").toUpperCase() === "APPROVED"
+            );
+            const totalDeposits = approved
+                .filter((request) => String(request.type || "").toUpperCase() === "DEPOSIT")
+                .reduce((sum, request) => sum + Number(request.amount || 0), 0);
+            const totalWithdrawals = approved
+                .filter((request) => String(request.type || "").toUpperCase() === "WITHDRAWAL")
+                .reduce((sum, request) => sum + Number(request.amount || 0), 0);
+
+            return {
+                id: user._id?.toString?.(),
+                name: user.name,
+                email: user.email,
+                accountNumber: user.accountNumber,
+                accountType: user.accountType,
+                joinedAt: user.createdAt,
+                totalDeposits,
+                totalWithdrawals,
+                transactions: requests.map((request) => ({
+                    id: request._id?.toString?.() || request.id,
+                    type: request.type,
+                    method: request.method,
+                    amount: request.amount,
+                    status: request.status,
+                    reference: request.type === "WITHDRAWAL"
+                        ? request.payload?.accountNumber || request.utr
+                        : request.utr,
+                    createdAt: request.createdAt,
+                    reviewedAt: request.reviewedAt,
+                    adminNote: request.adminNote
+                }))
+            };
+        }));
+
+        return res.json({
+            referredByName: currentUser?.referredByName || req.portalUser.referredByName || null,
+            referrals: summaries
+        });
+    } catch {
+        return res.status(500).json({
+            message: "Could not load referrals."
         });
     }
 }

@@ -47,6 +47,4 @@ const portalTradingAccountSchema = new mongoose.Schema(
     }
 );
 
-portalTradingAccountSchema.index({ portalUserId: 1, accountType: 1 }, { unique: true });
-
 export const PortalTradingAccount = mongoose.model("PortalTradingAccount", portalTradingAccountSchema);

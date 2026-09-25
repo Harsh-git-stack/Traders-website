@@ -97,6 +97,7 @@
           <button class="dash-tab" type="button" data-view="bonusesView">Bonus List</button>
           <button class="dash-tab" type="button" data-view="bonusesView">Credit Bonus</button>
         </div>
+        <button class="dash-tab" type="button" data-view="rewardsView"><span>RW</span> Rewards</button>
         <button class="dash-tab" type="button" data-view="marketsView"><span>EC</span> Economic Calendar</button>
         <button class="dash-tab" type="button" data-view="marketsView"><span>MR</span> Markets Report</button>
         <button class="dash-tab admin-only" type="button" data-view="adminView" hidden><span>AM</span> Admin</button>
@@ -143,6 +144,16 @@
           <article class="dash-card"><span>Open trades</span><strong id="metricOpenTrades">0</strong></article>
           <article class="dash-card"><span>Role</span><strong id="roleBadge">USER</strong></article>
         </section>
+
+        <article class="dash-panel portal-card">
+          <div class="panel-head">
+            <div><span>Referral</span><h2>Refer a Friend</h2></div>
+            <button class="auth-button portal-small-button" id="copyReferralButton" type="button">Copy Link</button>
+          </div>
+          <div class="portal-table-tools">
+            <input id="referralLink" readonly value="">
+          </div>
+        </article>
       </section>
 
       <section class="dashboard-view" id="profileView">
@@ -254,12 +265,6 @@
             <h2>UPI Deposit</h2>
             <p>Scan the QR code and submit your transaction details for approval.</p>
           </div>
-          <div class="payment-details-card" aria-label="Bank payment details">
-            <div><strong>Bank Name</strong><span>Apna Sahakari Bank Ltd.</span></div>
-            <div><strong>Account Name</strong><span>Anita Enterprises</span></div>
-            <div><strong>Account Number</strong><span>055012100000300</span></div>
-            <div><strong>IFSC Code</strong><span>ASBL0000055</span></div>
-          </div>
           <div class="upi-scanner-layout">
             <div class="upi-qr-box" aria-label="UPI scanner preview">
               <img class="upi-scanner-img" src="assets/upi-scanner.svg" alt="UPI QR scanner">
@@ -295,15 +300,6 @@
             <label>Select A Bank<select name="bank" required><option value="">Select a bank</option><option>HDFC Bank</option><option>ICICI Bank</option><option>State Bank</option></select></label>
             <button class="auth-button online-submit" type="submit">Continue</button>
           </form>
-          <div class="bank-details">
-            <div><strong>Bank Name</strong><span>Apna Sahakari Bank Ltd.</span></div>
-            <div><strong>Account Name</strong><span>Anita Enterprises</span></div>
-            <div><strong>Account Number</strong><span>055012100000300</span></div>
-            <div><strong>IFSC Code</strong><span>ASBL0000055</span></div>
-            <div><strong>Bank Country</strong><span>India</span></div>
-            <div><strong>Currency</strong><span>INR</span></div>
-            <div><strong>Note</strong><span>Transfer to this account, then submit the UTR / transaction ID in the deposit form.</span></div>
-          </div>
         </article>
       </section>
 
@@ -829,6 +825,35 @@
         <article class="dash-panel portal-card">
           <div class="panel-head"><div><span>Bonuses</span><h2>Bonus offers</h2></div></div>
           <div class="table-wrap"><table><thead><tr><th>Bonus</th><th>Amount</th><th>Status</th><th>Valid Till</th><th>Action</th></tr></thead><tbody><tr><td colspan="5">No bonus available</td></tr></tbody></table></div>
+        </article>
+      </section>
+
+      <section class="dashboard-view" id="rewardsView">
+        <article class="dash-panel portal-card">
+          <div class="panel-head">
+            <div><span>Referral</span><h2 id="referredByTitle">Referred by -</h2></div>
+          </div>
+        </article>
+        <section class="dashboard-grid metric-grid">
+          <article class="dash-card"><span>Available rewards</span><strong id="rewardBalance">$0.00</strong></article>
+          <article class="dash-card"><span>Total earned</span><strong id="rewardTotalEarned">$0.00</strong></article>
+          <article class="dash-card"><span>Total redeemed</span><strong id="rewardTotalRedeemed">$0.00</strong></article>
+        </section>
+        <article class="dash-panel portal-card">
+          <div class="panel-head"><div><span>Rewards</span><h2>Redeem Reward</h2></div></div>
+          <form class="dash-form compact-form" id="rewardRedeemForm">
+            <label>Amount<input name="amount" type="number" min="1" step="0.01" placeholder="25" required></label>
+            <button class="auth-button" type="submit">Create Redemption Request</button>
+          </form>
+        </article>
+        <article class="dash-panel portal-card">
+          <div class="panel-head"><div><span>Referrals</span><h2>People Referred By Me</h2></div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Email</th><th>Account</th><th>Total Deposit</th><th>Total Withdrawal</th><th>Joined</th><th>Details</th></tr></thead>
+              <tbody id="referralsBody"><tr><td colspan="7">No referred users yet.</td></tr></tbody>
+            </table>
+          </div>
         </article>
       </section>
 

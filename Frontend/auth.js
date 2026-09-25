@@ -26,6 +26,8 @@ const api = {
   adminPassword: "/api/trades/admin/user/change-password",
   cacheSizes: "/api/trades/admin/cache-sizes",
   clientRequests: "/api/client-requests",
+  rewards: "/api/client-requests/rewards",
+  referrals: "/api/client-requests/referrals",
   transfers: "/api/transfers",
   wallet: "/api/transfers/wallet"
 };
@@ -36,14 +38,9 @@ let latestClientRequests = [];
 let latestWalletSummary = null;
 let latestTransfers = [];
 let latestTradingAccounts = [];
+let latestRewards = { balance: 0, totalEarned: 0, totalRedeemed: 0 };
+let latestReferralSummary = { referredByName: null, referrals: [] };
 let realtimeClient = null;
-
-const depositBankDetails = {
-  bankName: "Apna Sahakari Bank Ltd.",
-  accountName: "Anita Enterprises",
-  accountNumber: "055012100000300",
-  ifscCode: "ASBL0000055"
-};
 
 function getToken() {
   return sessionStorage.getItem(TOKEN_KEY) || localStorage.getItem(TOKEN_KEY);
@@ -77,6 +74,11 @@ function authHeaders() {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {})
   };
+}
+
+function getReferralCodeFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return String(params.get("ref") || "").trim().toUpperCase();
 }
 
 async function readBody(response) {
@@ -200,7 +202,8 @@ function buildSignupPayload(form) {
     name: form.get("name"),
     email: form.get("email"),
     password: String(form.get("password") || ""),
-    role: "USER"
+    role: "USER",
+    referralCode: getReferralCodeFromUrl()
   };
 }
 
@@ -526,14 +529,21 @@ async function loadDashboard() {
   renderProfile(user);
   renderTradingAccountState(user);
   bindDashboardEvents();
-  await Promise.allSettled([loadTradingAccounts(), loadWalletSummary(), loadAccount(), loadTrades(), loadClientRequests(), loadTransfers()]);
+  await Promise.allSettled([loadTradingAccounts(), loadWalletSummary(), loadRewardSummary(), loadReferralSummary(), loadAccount(), loadTrades(), loadClientRequests(), loadTransfers()]);
 }
 
 function renderProfile(user) {
   const name = user.name || "Trader";
   const role = String(user.role || "USER").toUpperCase();
+  const referralCode = String(user.referralCode || "").trim();
+  const referralLink = referralCode
+    ? `${window.location.origin}${window.location.pathname.replace(/[^/]*$/, "signup.html")}?ref=${encodeURIComponent(referralCode)}`
+    : "";
+  const referredByText = user.referredByName ? `Referred by ${user.referredByName}` : "Referred by -";
   document.querySelector("#dashboardWelcome").textContent = `Welcome, ${name}`;
   document.querySelector("#roleBadge").textContent = role;
+  document.querySelector("#referralLink") && (document.querySelector("#referralLink").value = referralLink);
+  document.querySelector("#referredByTitle") && (document.querySelector("#referredByTitle").textContent = referredByText);
   document.querySelector("#profileHeroName") && (document.querySelector("#profileHeroName").textContent = name);
   document.querySelector("#profileName").textContent = name;
   document.querySelector("#profileMobile") && (document.querySelector("#profileMobile").textContent = user.phone || user.mobile || "-");
@@ -596,6 +606,27 @@ function bindDashboardEvents() {
       event.preventDefault();
       refreshAll();
     }
+    if (event.target.closest("#copyReferralButton")) {
+      event.preventDefault();
+      const input = document.querySelector("#referralLink");
+      if (!input?.value) {
+        showMessage("Referral link is not ready yet. Please log out and log in again.");
+        return;
+      }
+      navigator.clipboard?.writeText(input.value)
+        .then(() => showMessage("Referral link copied.", true))
+        .catch(() => {
+          input.select();
+          document.execCommand("copy");
+          showMessage("Referral link copied.", true);
+        });
+    }
+    const referralDetailsButton = event.target.closest(".referral-details-button");
+    if (referralDetailsButton) {
+      event.preventDefault();
+      const row = document.querySelector(`#${referralDetailsButton.dataset.target}`);
+      if (row) row.hidden = !row.hidden;
+    }
   });
   document.querySelector("#reloadTradesButton")?.addEventListener("click", loadTrades);
   document.querySelector("#reloadRequestsButton")?.addEventListener("click", loadClientRequests);
@@ -644,6 +675,7 @@ function bindDashboardEvents() {
   document.querySelector("#adminBalanceForm")?.addEventListener("submit", submitAdminBalance);
   document.querySelector("#adminCreditForm")?.addEventListener("submit", submitAdminCredit);
   document.querySelector("#adminPasswordForm")?.addEventListener("submit", submitAdminPassword);
+  document.querySelector("#rewardRedeemForm")?.addEventListener("submit", submitRewardRedemption);
   document.querySelectorAll(".deposit-request-form, .client-request-form").forEach((form) => {
     form.addEventListener("submit", submitDepositRequest);
   });
@@ -669,7 +701,7 @@ function activateDashboardView(viewId, activeButton = null) {
 
 async function refreshAll() {
   showMessage("Refreshing dashboard...", true);
-  const results = await Promise.allSettled([loadTradingAccounts(), loadAccount(), loadTrades(), loadClientRequests(), loadWalletSummary(), loadTransfers()]);
+  const results = await Promise.allSettled([loadTradingAccounts(), loadAccount(), loadTrades(), loadClientRequests(), loadWalletSummary(), loadRewardSummary(), loadReferralSummary(), loadTransfers()]);
   const failed = results.filter((result) => result.status === "rejected").length;
   showMessage(failed ? `Refresh completed with ${failed} failed request(s).` : "Dashboard refreshed.", failed === 0);
 }
@@ -724,6 +756,73 @@ function renderWalletSummary(summary = {}) {
   document.querySelectorAll("[data-wallet-balance]").forEach((element) => {
     element.textContent = money(walletBalance);
   });
+}
+
+async function loadRewardSummary() {
+  const response = await backendFetch(api.rewards);
+  if (!response.ok) throw new Error("Rewards unavailable");
+  const data = await readBody(response);
+  latestRewards = data.rewards || { balance: 0, totalEarned: 0, totalRedeemed: 0 };
+  renderRewardSummary(latestRewards);
+}
+
+function renderRewardSummary(rewards = {}) {
+  document.querySelector("#rewardBalance") && (document.querySelector("#rewardBalance").textContent = money(rewards.balance));
+  document.querySelector("#rewardTotalEarned") && (document.querySelector("#rewardTotalEarned").textContent = money(rewards.totalEarned));
+  document.querySelector("#rewardTotalRedeemed") && (document.querySelector("#rewardTotalRedeemed").textContent = money(rewards.totalRedeemed));
+}
+
+async function loadReferralSummary() {
+  const response = await backendFetch(api.referrals);
+  if (!response.ok) throw new Error("Referrals unavailable");
+  latestReferralSummary = await readBody(response);
+  renderReferralSummary(latestReferralSummary);
+}
+
+function renderReferralSummary(summary = {}) {
+  const referrals = summary.referrals || [];
+  const body = document.querySelector("#referralsBody");
+  const referredByName = summary.referredByName || getStoredUser()?.referredByName;
+  document.querySelector("#referredByTitle") && (document.querySelector("#referredByTitle").textContent = referredByName ? `Referred by ${referredByName}` : "Referred by -");
+  if (!body) return;
+
+  body.innerHTML = referrals.map((user, index) => {
+    const detailsId = `referralDetails${index}`;
+    const transactions = user.transactions || [];
+    const detailRows = transactions.map((transaction) => `
+      <tr>
+        <td>${formatRequestDate(transaction.createdAt)}</td>
+        <td>${compact(transaction.type)}</td>
+        <td>${compact(transaction.method)}</td>
+        <td>${money(transaction.amount)}</td>
+        <td>${compact(transaction.reference)}</td>
+        <td><span class="request-status ${requestStatusClass(transaction.status)}">${compact(transaction.status)}</span></td>
+        <td>${formatRequestDate(transaction.reviewedAt)}</td>
+      </tr>
+    `).join("") || `<tr><td colspan="7">No deposit or withdrawal transactions yet.</td></tr>`;
+
+    return `
+      <tr>
+        <td>${compact(user.name)}</td>
+        <td>${compact(user.email)}</td>
+        <td>${compact(user.accountNumber)}</td>
+        <td>${money(user.totalDeposits)}</td>
+        <td>${money(user.totalWithdrawals)}</td>
+        <td>${formatRequestDate(user.joinedAt)}</td>
+        <td><button class="outline-button referral-details-button" type="button" data-target="${detailsId}">Details</button></td>
+      </tr>
+      <tr id="${detailsId}" hidden>
+        <td colspan="7">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Type</th><th>Method</th><th>Amount</th><th>Reference</th><th>Status</th><th>Reviewed</th></tr></thead>
+              <tbody>${detailRows}</tbody>
+            </table>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("") || `<tr><td colspan="7">No referred users yet.</td></tr>`;
 }
 
 function renderTransferAccountSummary(account = {}) {
@@ -914,7 +1013,6 @@ async function submitDepositRequest(event) {
         phone: String(payload.phone || "").trim(),
         email: String(payload.email || "").trim(),
         payload: {
-          beneficiary: depositBankDetails
         }
       };
 
@@ -1043,6 +1141,42 @@ async function submitTransfer(event) {
   }
 }
 
+async function submitRewardRedemption(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const amount = Number(new FormData(form).get("amount"));
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    showMessage("Enter a valid reward amount.");
+    return;
+  }
+
+  if (amount > Number(latestRewards.balance || 0)) {
+    showMessage("Amount is greater than your available rewards.");
+    return;
+  }
+
+  try {
+    const { response } = await submitJson(api.clientRequests, "POST", {
+      type: "REWARD_REDEMPTION",
+      method: "REFERRAL_REWARD",
+      amount,
+      utr: "REWARD",
+      payerName: "Referral reward",
+      payload: {
+        source: "REFERRAL_REWARD"
+      }
+    }, "Reward redemption request submitted. Status: Pending.");
+
+    if (response.ok) {
+      form.reset();
+      await Promise.allSettled([loadRewardSummary(), loadClientRequests()]);
+    }
+  } catch {
+    showMessage("Backend not reachable. Reward redemption was not saved.");
+  }
+}
+
 async function loadClientRequests() {
   const response = await backendFetch(`${api.clientRequests}/my`);
   if (!response.ok) throw new Error("Requests unavailable");
@@ -1080,6 +1214,8 @@ function renderClientRequests(requests = []) {
     const type = String(request.type || "").toUpperCase();
     const reference = type === "WITHDRAWAL"
       ? request.payload?.accountNumber || request.utr
+      : type === "REWARD_REDEMPTION"
+        ? "Referral reward"
       : request.utr || request.payload?.accountNumber;
     return `
       <tr>

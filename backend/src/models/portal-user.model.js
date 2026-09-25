@@ -50,6 +50,31 @@ const portalUserSchema = new mongoose.Schema(
             type: String,
             default: null
         },
+        referralCode: {
+            type: String,
+            trim: true,
+            uppercase: true,
+            unique: true,
+            sparse: true,
+            index: true
+        },
+        referredByCode: {
+            type: String,
+            trim: true,
+            uppercase: true,
+            default: null,
+            index: true
+        },
+        referredByUserId: {
+            type: String,
+            default: null,
+            index: true
+        },
+        referredByName: {
+            type: String,
+            default: null,
+            trim: true
+        },
         swapValue: {
             type: Boolean,
             default: false
