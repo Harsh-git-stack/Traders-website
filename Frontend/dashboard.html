@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trader Area | NexfordMarket</title>
+  <title>Trader Area | Trade4WorldFX</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -12,28 +12,12 @@
 <body>
   <main class="dashboard-shell portal-shell">
     <aside class="portal-sidebar">
-      <a class="portal-logo" href="index.html"><span class="auth-mark">N</span><span>NexfordMarket</span></a>
+      <a class="portal-logo" href="dashboard.html" aria-label="Trade4WorldFX dashboard"><img class="portal-logo-image" src="assets/trade4worldfx-logo.png" alt="Trade4WorldFX"></a>
       <nav class="portal-menu" aria-label="Client area navigation">
         <button class="dash-tab active" type="button" data-view="overviewView"><span>DB</span> Dashboard</button>
-        <button class="portal-dropdown-toggle" type="button" data-menu="adminMenu"><span>AD</span> My Admin <b>v</b></button>
-        <div class="portal-submenu" id="adminMenu" hidden>
-          <button class="dash-tab" type="button" data-view="profileView">Profile Overview</button>
-          <button class="dash-tab" type="button" data-view="settingsView">Settings</button>
-          <button class="dash-tab" type="button" data-view="verificationView">Verification</button>
-          <button class="dash-tab" type="button" data-view="bankingView">Banking</button>
-          <button class="dash-tab" type="button" data-view="reportsView">UPI</button>
-        </div>
-
-        <button class="portal-dropdown-toggle" type="button" data-menu="tradingMenu"><span>TA</span> Trading Accounts <b>v</b></button>
-        <div class="portal-submenu" id="tradingMenu" hidden>
-          <button class="dash-tab" type="button" data-view="tradingAccountsView">Open Demo Account</button>
-          <button class="dash-tab" type="button" data-view="tradingAccountsView">Open Live Account</button>
-          <button class="dash-tab" type="button" data-view="tradingAccountsView">Trading Account Settings</button>
-        </div>
-
-        <button class="portal-dropdown-toggle" type="button" data-view="depositMethodsView"><span>DP</span> Deposit <b>v</b></button>
-
-        <button class="portal-dropdown-toggle" type="button" data-view="withdrawalMethodsView"><span>WD</span> Withdraw <b>v</b></button>
+        <button class="dash-tab" type="button" data-view="tradingAccountsView"><span>TA</span> Trading Accounts</button>
+        <button class="dash-tab" type="button" data-view="depositMethodsView"><span>DP</span> Deposit</button>
+        <button class="dash-tab" type="button" data-view="withdrawalMethodsView"><span>WD</span> Withdraw</button>
 
         <button class="portal-dropdown-toggle" type="button" data-menu="transferMenu"><span>TR</span> Transfer <b>v</b></button>
         <div class="portal-submenu" id="transferMenu" hidden>
@@ -41,72 +25,9 @@
           <button class="dash-tab" type="button" data-view="accountToWalletView">Account To Wallet</button>
         </div>
 
-        <button class="portal-dropdown-toggle" type="button" data-menu="reportsMenu"><span>RP</span> Reports <b>v</b></button>
-        <div class="portal-submenu" id="reportsMenu" hidden>
-          <button class="dash-tab" type="button" data-view="reportsView">Deposit History</button>
-          <button class="dash-tab" type="button" data-view="reportsView">Withdraw History</button>
-          <button class="dash-tab" type="button" data-view="reportsView">Transfer History</button>
-          <button class="dash-tab" type="button" data-view="reportsView">Trading History</button>
-          <button class="dash-tab" type="button" data-view="reportsView">UPI Reports</button>
-        </div>
-
-        <button class="portal-dropdown-toggle" type="button" data-menu="supportMenu"><span>SP</span> Support <b>v</b></button>
-        <div class="portal-submenu" id="supportMenu" hidden>
-          <button class="dash-tab" type="button" data-view="supportView">Create Ticket</button>
-          <button class="dash-tab" type="button" data-view="supportView">Ticket List</button>
-        </div>
-
-        <button class="portal-dropdown-toggle" type="button" data-menu="copyMenu"><span>CT</span> Copy Trading <b>v</b></button>
-        <div class="portal-submenu" id="copyMenu" hidden>
-          <button class="dash-tab" type="button" data-view="copyTradingView">Provider</button>
-          <button class="dash-tab" type="button" data-view="copyTradingView">Follower</button>
-          <button class="dash-tab" type="button" data-view="copyTradingView">Leaderboard</button>
-          <button class="dash-tab" type="button" data-view="copyTradingView">Contest</button>
-        </div>
-
-        <button class="portal-dropdown-toggle" type="button" data-menu="pammMenu"><span>PM</span> Pamm <b>v</b></button>
-        <div class="portal-submenu" id="pammMenu" hidden>
-          <button class="dash-tab" type="button" data-view="pammView">Master</button>
-          <button class="dash-tab" type="button" data-view="pammView">Investor</button>
-          <button class="dash-tab" type="button" data-view="pammView">Leaderboard</button>
-        </div>
-        <div class="portal-menu-label">Social Trade</div>
-        <button class="portal-dropdown-toggle" type="button" data-menu="socialMenu"><span>ST</span> Social Trading <b>v</b></button>
-        <div class="portal-submenu" id="socialMenu" hidden>
-          <button class="dash-tab" type="button" data-view="socialTradingView">Dashboard</button>
-          <button class="dash-tab" type="button" data-view="socialTradingView">Provider</button>
-          <button class="dash-tab" type="button" data-view="socialTradingView">Follower</button>
-        </div>
-        <button class="portal-dropdown-toggle" type="button" data-menu="followersMenu"><span>FL</span> Followers <b>v</b></button>
-        <div class="portal-submenu" id="followersMenu" hidden>
-          <button class="dash-tab" type="button" data-view="watchlistView">My Followers</button>
-          <button class="dash-tab" type="button" data-view="watchlistView">Following</button>
-        </div>
-        <button class="portal-dropdown-toggle" type="button" data-menu="socialReportsMenu"><span>SR</span> Social Trading Reports <b>v</b></button>
-        <div class="portal-submenu" id="socialReportsMenu" hidden>
-          <button class="dash-tab" type="button" data-view="reportsView">Provider Report</button>
-          <button class="dash-tab" type="button" data-view="reportsView">Follower Report</button>
-        </div>
-        <button class="portal-dropdown-toggle" type="button" data-menu="contestMenu"><span>CN</span> Contest <b>v</b></button>
-        <div class="portal-submenu" id="contestMenu" hidden>
-          <button class="dash-tab" type="button" data-view="contestView">Active Contest</button>
-          <button class="dash-tab" type="button" data-view="contestView">Contest History</button>
-        </div>
-        <button class="portal-dropdown-toggle" type="button" data-menu="bonusMenu"><span>BN</span> Bonuses <b>v</b></button>
-        <div class="portal-submenu" id="bonusMenu" hidden>
-          <button class="dash-tab" type="button" data-view="bonusesView">Bonus List</button>
-          <button class="dash-tab" type="button" data-view="bonusesView">Credit Bonus</button>
-        </div>
+        <button class="dash-tab" type="button" data-view="reportsView"><span>RP</span> Request History</button>
         <button class="dash-tab" type="button" data-view="rewardsView"><span>RW</span> Rewards</button>
-        <button class="dash-tab" type="button" data-view="marketsView"><span>EC</span> Economic Calendar</button>
-        <button class="dash-tab" type="button" data-view="marketsView"><span>MR</span> Markets Report</button>
-        <button class="dash-tab admin-only" type="button" data-view="adminView" hidden><span>AM</span> Admin</button>
       </nav>
-      <div class="partner-box">
-        <strong>Make a partnership?</strong>
-        <span>Please send a request</span>
-        <a href="#supportView">Become a partner</a>
-      </div>
     </aside>
 
     <section class="portal-main">
@@ -126,16 +47,6 @@
       <p class="dashboard-message" id="dashboardMessage" role="status"></p>
 
       <section class="dashboard-view active" id="overviewView">
-        <article class="dash-panel portal-card">
-          <div class="panel-head">
-            <div><span>Trader Area</span><h2>UPI Reports</h2></div>
-            <button class="auth-button portal-small-button" type="button">Add New UPI ID</button>
-          </div>
-          <div class="portal-table-tools"><select><option>10</option><option>25</option><option>50</option></select><input placeholder="Search"></div>
-          <div class="table-wrap"><table><thead><tr><th>UPI ID</th><th>Status</th><th>Approve Status</th><th>Request Date</th><th>Action</th></tr></thead><tbody><tr><td colspan="5">No data available in table</td></tr></tbody></table></div>
-          <div class="portal-table-footer"><span>Showing 0 to 0 of 0 entries</span><span><button type="button">&lt;</button><button type="button">&gt;</button></span></div>
-        </article>
-
         <section class="dashboard-grid metric-grid">
           <article class="dash-card"><span>Equity</span><strong id="metricEquity">$0.00</strong></article>
           <article class="dash-card"><span>Free margin</span><strong id="metricFreeMargin">$0.00</strong></article>
@@ -224,57 +135,34 @@
           </div>
 
           <div class="deposit-method-grid" aria-label="Deposit methods">
-            <button class="deposit-method-card locked" type="button" disabled>
-              <span class="method-lock">Lock</span>
-              <span class="method-icon crypto-icon">C</span>
-              <b>Cryptocurrencies</b>
-            </button>
-            <button class="deposit-method-card locked" type="button" disabled>
-              <span class="method-lock">Lock</span>
-              <span class="method-icon usdt-icon">T</span>
-              <b>USDT</b>
-            </button>
-            <button class="deposit-method-card" type="button" data-deposit-method="upiScannerView">
-              <span class="method-lock">Lock</span>
-              <span class="method-logo">UPI</span>
-              <b>UPI</b>
-            </button>
-            <button class="deposit-method-card" type="button" data-deposit-method="upiScannerView">
-              <span class="method-lock">Lock</span>
-              <span class="method-logo">UPI</span>
-              <b>UPI</b>
-            </button>
-            <button class="deposit-method-card locked" type="button" disabled>
-              <span class="method-lock">Lock</span>
-              <span class="method-logo">IMPS</span>
-              <b>Local Bank Transfer</b>
-            </button>
-            <button class="deposit-method-card locked" type="button" disabled>
-              <span class="method-lock">Lock</span>
-              <span class="method-icon bank-icon">B</span>
-              <b>Online Bank Transfer</b>
+            <button class="deposit-method-card" type="button" data-deposit-method="bankTransferView">
+              <span class="method-logo">BT</span>
+              <b>Bank Transfer</b>
             </button>
           </div>
         </div>
       </section>
 
-      <section class="dashboard-view" id="upiScannerView">
+      <section class="dashboard-view" id="bankTransferView">
         <article class="dash-panel upi-scanner-card">
           <button class="outline-button deposit-back-button" type="button" data-deposit-method="depositMethodsView">Back</button>
           <div class="online-deposit-head">
-            <h2>UPI Deposit</h2>
-            <p>Scan the QR code and submit your transaction details for approval.</p>
+            <h2>Bank Transfer Deposit</h2>
+            <p>Transfer to the account below, then submit your transaction details for approval.</p>
           </div>
           <div class="upi-scanner-layout">
-            <div class="upi-qr-box" aria-label="UPI scanner preview">
-              <img class="upi-scanner-img" src="assets/upi-scanner.svg" alt="UPI QR scanner">
-              <span>UPI</span>
+            <div class="bank-transfer-details" aria-label="Bank transfer beneficiary details">
+              <span>Beneficiary</span><strong>KUNAL NITIN GIRI</strong>
+              <span>Account number</span><strong>50100599236752</strong>
+              <span>IFSC</span><strong>HDFC0006184</strong>
+              <span>MICR</span><strong>400240289</strong>
+              <span>Customer ID</span><strong>226686818</strong>
             </div>
-            <form class="online-deposit-form upi-deposit-request-form deposit-request-form" data-request-name="UPI Deposit">
-              <label>Email<input id="upiDepositEmail" name="email" type="email" placeholder="name@example.com" readonly></label>
+            <form class="online-deposit-form deposit-request-form" data-request-name="Bank Transfer Deposit">
+              <label>Email<input id="bankTransferDepositEmail" name="email" type="email" placeholder="name@example.com" readonly></label>
               <label>Amount (USD)<input name="amount" type="number" min="1" step="0.01" placeholder="100" required></label>
               <label>UTR / Transaction ID<input name="utr" placeholder="1234567890" required></label>
-              <label>Payer name<input name="payerName" placeholder="Name used for payment" required></label>
+              <label>Sender name<input name="payerName" placeholder="Name used for transfer" required></label>
               <label>Phone<input name="phone" type="tel" placeholder="+91 98765 43210"></label>
               <button class="auth-button online-submit" type="submit">Submit Deposit Request</button>
             </form>
@@ -449,7 +337,7 @@
         <article class="dash-panel portal-card">
           <div class="panel-head"><div><span>Support</span><h2>Need help?</h2></div></div>
           <p>Contact the client desk for deposits, verification, trading accounts, partnerships, and platform support.</p>
-          <div class="profile-list"><div><span>Email</span><strong>support@nexfordmarket.com</strong></div><div><span>Status</span><strong>Open 24/5</strong></div></div>
+          <div class="profile-list"><div><span>Email</span><strong>support@trade4worldfx.com</strong></div><div><span>Status</span><strong>Open 24/5</strong></div></div>
         </article>
       </section>
 
@@ -478,33 +366,10 @@
             </div>
           </div>
 
-          <article class="withdraw-account-card">
-            <span>Ultra Low Standard <b>Real</b></span>
-            <strong>0.00 USD</strong>
-            <small>#317425425</small>
-          </article>
-
-          <div class="withdraw-disabled-head">
-            <span>Disabled Methods</span>
-            <p>These payment methods cannot be used since they are only for verified clients</p>
-            <b>Verify your Account &gt;</b>
-          </div>
-
           <div class="withdraw-method-grid" aria-label="Withdrawal methods">
             <button class="withdraw-method-card" type="button" data-withdraw-method="onlineBankWithdrawFormView">
-              <span class="method-lock">Lock</span>
               <span class="method-icon bank-icon">B</span>
               <b>Online Bank<br>Transfer</b>
-            </button>
-            <button class="withdraw-method-card locked" type="button" disabled>
-              <span class="method-lock">Lock</span>
-              <span class="method-logo binance-logo">BINANCE PAY</span>
-              <b>Binance Pay</b>
-            </button>
-            <button class="withdraw-method-card locked" type="button" disabled>
-              <span class="method-lock">Lock</span>
-              <span class="method-icon crypto-icon">C</span>
-              <b>Cryptocurrency</b>
             </button>
           </div>
         </div>
@@ -905,7 +770,7 @@
         <article class="dash-panel"><div class="panel-head"><div><span>Runtime</span><h2>Execution cache</h2></div><button class="outline-button" type="button" id="cacheSizesButton">Load cache sizes</button></div><pre class="json-preview" id="cachePreview">{}</pre></article>
       </section>
 
-      <footer class="portal-footer"><span>NexfordMarket (c) 2026</span><a href="#">AML Policy</a><a href="#supportView">Contact Us</a><a href="#">Privacy Policy</a><a href="#">Refund Policy</a><a href="#">Terms & Conditions</a></footer>
+      <footer class="portal-footer"><span>Trade4WorldFX (c) 2026</span><a href="#">AML Policy</a><a href="#supportView">Contact Us</a><a href="#">Privacy Policy</a><a href="#">Refund Policy</a><a href="#">Terms & Conditions</a></footer>
     </section>
   </main>
   <button class="portal-chat" type="button" aria-label="Open chat">...</button>

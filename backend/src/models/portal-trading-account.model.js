@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 
 const portalTradingAccountSchema = new mongoose.Schema(
     {
+        tenantId: {
+            type: String,
+            required: true,
+            index: true
+        },
         portalUserId: {
             type: String,
             required: true,
@@ -10,13 +15,11 @@ const portalTradingAccountSchema = new mongoose.Schema(
         tradingUserId: {
             type: String,
             required: true,
-            unique: true,
             index: true
         },
         accountNumber: {
             type: Number,
             required: true,
-            unique: true,
             index: true
         },
         accountType: {
@@ -46,5 +49,8 @@ const portalTradingAccountSchema = new mongoose.Schema(
         collection: "portal_trading_accounts"
     }
 );
+
+portalTradingAccountSchema.index({ tenantId: 1, tradingUserId: 1 }, { unique: true });
+portalTradingAccountSchema.index({ tenantId: 1, accountNumber: 1 }, { unique: true });
 
 export const PortalTradingAccount = mongoose.model("PortalTradingAccount", portalTradingAccountSchema);

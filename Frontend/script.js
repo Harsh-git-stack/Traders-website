@@ -67,11 +67,11 @@ if (navToggle && navMenu) {
 if (themeToggle) {
   themeToggle.addEventListener("click", () => {
     document.body.classList.toggle("dark");
-    localStorage.setItem("nexford-theme", document.body.classList.contains("dark") ? "dark" : "light");
+    localStorage.setItem("trade4worldfx-theme", document.body.classList.contains("dark") ? "dark" : "light");
   });
 }
 
-if (localStorage.getItem("nexford-theme") === "dark") {
+if (localStorage.getItem("trade4worldfx-theme") !== "light") {
   document.body.classList.add("dark");
 }
 
@@ -97,63 +97,6 @@ if (tickerTrack && markets.length) {
     return item;
   });
   tickerItems.forEach((item) => tickerTrack.appendChild(item));
-}
-
-const offerSlider = document.querySelector(".offer-slider");
-const offerSlides = document.querySelectorAll(".offer-slide");
-const offerPrev = document.querySelector(".offer-prev");
-const offerNext = document.querySelector(".offer-next");
-const offerDots = document.querySelector("#offerDots");
-let offerIndex = 0;
-let offerTimer = null;
-
-function showOffer(index) {
-  if (!offerSlides.length) return;
-  offerIndex = (index + offerSlides.length) % offerSlides.length;
-  offerSlides.forEach((slide, current) => {
-    slide.classList.toggle("active", current === offerIndex);
-  });
-  offerDots?.querySelectorAll(".offer-dot").forEach((dot, current) => {
-    dot.classList.toggle("active", current === offerIndex);
-    dot.setAttribute("aria-current", current === offerIndex ? "true" : "false");
-  });
-}
-
-function startOfferCarousel() {
-  if (offerSlides.length < 2) return;
-  clearInterval(offerTimer);
-  offerTimer = setInterval(() => showOffer(offerIndex + 1), 4500);
-}
-
-if (offerSlider && offerSlides.length) {
-  offerSlides.forEach((_, index) => {
-    const dot = document.createElement("button");
-    dot.className = "offer-dot";
-    dot.type = "button";
-    dot.setAttribute("aria-label", `Show offer ${index + 1}`);
-    dot.addEventListener("click", () => {
-      showOffer(index);
-      startOfferCarousel();
-    });
-    offerDots?.appendChild(dot);
-  });
-
-  offerPrev?.addEventListener("click", () => {
-    showOffer(offerIndex - 1);
-    startOfferCarousel();
-  });
-
-  offerNext?.addEventListener("click", () => {
-    showOffer(offerIndex + 1);
-    startOfferCarousel();
-  });
-
-  offerSlider.addEventListener("mouseenter", () => clearInterval(offerTimer));
-  offerSlider.addEventListener("mouseleave", startOfferCarousel);
-  offerSlider.addEventListener("touchstart", () => clearInterval(offerTimer), { passive: true });
-  offerSlider.addEventListener("touchend", startOfferCarousel);
-  showOffer(0);
-  startOfferCarousel();
 }
 
 const screenerData = [];
@@ -325,7 +268,7 @@ function updateRiskLab() {
   positionSize.textContent = `${(value / 100).toFixed(2)} lot`;
   marginPressure.textContent = `${value}%`;
   riskCoreValue.textContent = `${value}%`;
-  riskCore.style.background = `radial-gradient(circle, rgba(19, 185, 143, ${0.18 + value / 280}), rgba(255, 255, 255, 0.08))`;
+  riskCore.style.background = `radial-gradient(circle, rgba(18, 107, 255, ${0.18 + value / 280}), rgba(255, 255, 255, 0.08))`;
 }
 
 if (riskRange) {

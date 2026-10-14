@@ -2,10 +2,10 @@ import mongoose from "mongoose";
 
 const rewardBalanceSchema = new mongoose.Schema(
     {
+        tenantId: { type: String, required: true, index: true },
         userId: {
             type: String,
             required: true,
-            unique: true,
             index: true
         },
         accountNumber: {
@@ -39,5 +39,7 @@ const rewardBalanceSchema = new mongoose.Schema(
         collection: "reward_balances"
     }
 );
+
+rewardBalanceSchema.index({ tenantId: 1, userId: 1 }, { unique: true });
 
 export const RewardBalance = mongoose.model("RewardBalance", rewardBalanceSchema);

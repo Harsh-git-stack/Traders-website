@@ -19,6 +19,10 @@ function normalizeEmail(email = "") {
     return String(email).trim().toLowerCase();
 }
 
+function tenantKey(tenantId, value) {
+    return `${tenantId}:${value}`;
+}
+
 function hashOtp(otp) {
     return crypto
         .createHmac("sha256", env.portalJwtSecret)
@@ -34,14 +38,14 @@ function normalizeReferralCode(value = "") {
     return String(value || "").trim().toUpperCase();
 }
 
-async function generateReferralCode() {
+async function generateReferralCode(tenantId) {
     for (let attempt = 0; attempt < 20; attempt += 1) {
         let code = "NXF";
         for (let i = 0; i < 7; i += 1) {
             code += REF_ALPHABET[crypto.randomInt(0, REF_ALPHABET.length)];
         }
 
-        if (!await PortalUser.exists({ referralCode: code })) {
+        if (!await PortalUser.exists({ tenantId, referralCode: code })) {
             return code;
         }
     }
@@ -54,7 +58,7 @@ async function ensurePortalReferralCode(portalUser) {
         return portalUser;
     }
 
-    portalUser.referralCode = await generateReferralCode();
+    portalUser.referralCode = await generateReferralCode(portalUser.tenantId);
     await portalUser.save();
     return portalUser;
 }
@@ -162,6 +166,7 @@ function signPortalToken({ portalUser, selectedAccount = null, traderToken = nul
             accountNumber: selectedAccount?.accountNumber || portalUser.accountNumber || null,
             email: portalUser.email,
             referredByName: portalUser.referredByName || null,
+            tenantId: portalUser.tenantId,
             hasTradingAccount: Boolean(selectedAccount?.accountNumber && traderToken)
         },
         env.portalJwtSecret,
@@ -175,30 +180,31 @@ function springEmailForAccount(email, accountType) {
     return `${localPart}+${String(accountType).toLowerCase()}@${domain}`;
 }
 
-async function getPortalAccounts(portalUserId) {
-    return PortalTradingAccount.find({ portalUserId: String(portalUserId) })
+async function getPortalAccounts(tenantId, portalUserId) {
+    return PortalTradingAccount.find({ tenantId, portalUserId: String(portalUserId) })
         .sort({ accountType: 1, createdAt: 1 })
         .lean();
 }
 
 async function getSelectedAccount(portalUser, accounts = null) {
     const portalUserId = portalUser._id?.toString?.() || portalUser.portalUserId;
-    const list = accounts || await getPortalAccounts(portalUserId);
+    const list = accounts || await getPortalAccounts(portalUser.tenantId, portalUserId);
     return list.find((account) => String(account._id) === String(portalUser.selectedTradingAccountId)) ||
         list[0] ||
         null;
 }
 
-async function syncPortalUserFromSpring(user, passwordHash = null) {
+async function syncPortalUserFromSpring(user, tenantId, passwordHash = null) {
     const email = normalizeEmail(user.email);
     const accountNumber = Number(user.accountNumber);
     const existingAccount = Number.isFinite(accountNumber)
-        ? await PortalTradingAccount.findOne({ accountNumber })
+        ? await PortalTradingAccount.findOne({ tenantId, accountNumber })
         : null;
     const existingPortalUser = existingAccount
         ? await PortalUser.findById(existingAccount.portalUserId)
-        : await PortalUser.findOne({ email });
+        : await PortalUser.findOne({ tenantId, email });
     const update = {
+        tenantId,
         name: user.name,
         email,
         role: user.role || "USER",
@@ -229,6 +235,7 @@ async function syncPortalUserFromSpring(user, passwordHash = null) {
         });
 
     const accountUpdate = {
+        tenantId,
         portalUserId: portalUser._id.toString(),
         tradingUserId: user.id,
         accountNumber: user.accountNumber,
@@ -256,7 +263,7 @@ async function syncPortalUserFromSpring(user, passwordHash = null) {
             }
 
             account = await PortalTradingAccount.findOneAndUpdate(
-                { accountNumber: user.accountNumber },
+                { tenantId, accountNumber: user.accountNumber },
                 { $set: accountUpdate },
                 { new: true, upsert: true }
             );
@@ -285,12 +292,13 @@ export async function userLogin(req, res) {
         let accountLogin = null;
 
         if (/^\d+$/.test(String(id || "").trim())) {
-            accountLogin = await PortalTradingAccount.findOne({ accountNumber: Number(id) });
+            accountLogin = await PortalTradingAccount.findOne({ tenantId: req.tenant.id, accountNumber: Number(id) });
         }
 
         const portalUser = accountLogin
-            ? await PortalUser.findById(accountLogin.portalUserId)
+            ? await PortalUser.findOne({ _id: accountLogin.portalUserId, tenantId: req.tenant.id })
             : await PortalUser.findOne({
+            tenantId: req.tenant.id,
             $or: [
                 { email: normalizedLogin },
                 ...(String(id || "").trim() ? [{ accountNumber: Number(id) || -1 }] : [])
@@ -299,13 +307,13 @@ export async function userLogin(req, res) {
 
         if (portalUser && verifyPassword(password, portalUser.passwordHash)) {
             let traderToken = null;
-            const accounts = await getPortalAccounts(portalUser._id.toString());
+            const accounts = await getPortalAccounts(req.tenant.id, portalUser._id.toString());
             const selectedAccount = accountLogin || await getSelectedAccount(portalUser, accounts);
             await ensurePortalReferralCode(portalUser);
 
             if (selectedAccount?.accountNumber) {
                 try {
-                    const springLogin = await login({ id: selectedAccount.accountNumber, password });
+                    const springLogin = await login({ id: selectedAccount.accountNumber, password }, req.tenant.id);
                     traderToken = springLogin.token;
                 } catch {
                     traderToken = null;
@@ -318,7 +326,7 @@ export async function userLogin(req, res) {
             });
         }
 
-        const userData = await login({ email, id, password });
+        const userData = await login({ email, id, password }, req.tenant.id);
 
         const traderToken = userData.token;
         const user = userData.user;
@@ -326,12 +334,12 @@ export async function userLogin(req, res) {
 
         if (!traderToken || !user) {
             return res.status(502).json({
-                message: "Invalid login response from nexfordServer"
+                message: "Invalid login response from trading server"
             })
         }
 
-        const syncedPortalUser = await syncPortalUserFromSpring(user, hashPassword(password));
-        const accounts = await getPortalAccounts(syncedPortalUser._id.toString());
+        const syncedPortalUser = await syncPortalUserFromSpring(user, req.tenant.id, hashPassword(password));
+        const accounts = await getPortalAccounts(req.tenant.id, syncedPortalUser._id.toString());
         const selectedAccount = await getSelectedAccount(syncedPortalUser, accounts);
         const portalToken = signPortalToken({ portalUser: syncedPortalUser, selectedAccount, traderToken });
 
@@ -366,7 +374,7 @@ export async function requestRegistrationOtp(req, res) {
         const otp = generateOtp();
         const expiresAt = Date.now() + env.otpExpiresInMinutes * 60 * 1000;
 
-        pendingRegistrations.set(payload.email, {
+        pendingRegistrations.set(tenantKey(req.tenant.id, payload.email), {
             payload,
             otpHash: hashOtp(otp),
             expiresAt,
@@ -376,15 +384,16 @@ export async function requestRegistrationOtp(req, res) {
         await sendWelcomeOtpEmail({
             to: payload.email,
             name: payload.name,
-            otp
+            otp,
+            tenantId: req.tenant.id
         });
 
         return res.json({
-            message: "Welcome to Nex Ford. OTP sent to your email.",
+            message: "Verification code sent to your email.",
             expiresInMinutes: env.otpExpiresInMinutes
         });
     } catch (error) {
-        pendingRegistrations.delete(payload.email);
+        pendingRegistrations.delete(tenantKey(req.tenant.id, payload.email));
 
         return res.status(500).json({
             message: error.message || "Could not send OTP email."
@@ -402,7 +411,7 @@ export async function verifyRegistrationOtp(req, res) {
         });
     }
 
-    const pending = pendingRegistrations.get(email);
+    const pending = pendingRegistrations.get(tenantKey(req.tenant.id, email));
 
     if (!pending) {
         return res.status(400).json({
@@ -411,7 +420,7 @@ export async function verifyRegistrationOtp(req, res) {
     }
 
     if (Date.now() > pending.expiresAt) {
-        pendingRegistrations.delete(email);
+        pendingRegistrations.delete(tenantKey(req.tenant.id, email));
         return res.status(400).json({
             message: "OTP expired. Please request a new OTP."
         });
@@ -421,7 +430,7 @@ export async function verifyRegistrationOtp(req, res) {
         pending.attempts += 1;
 
         if (pending.attempts >= MAX_OTP_ATTEMPTS) {
-            pendingRegistrations.delete(email);
+            pendingRegistrations.delete(tenantKey(req.tenant.id, email));
             return res.status(429).json({
                 message: "Too many incorrect OTP attempts. Please request a new OTP."
             });
@@ -433,43 +442,45 @@ export async function verifyRegistrationOtp(req, res) {
     }
 
     try {
-        const existing = await PortalUser.findOne({ email });
+        const existing = await PortalUser.findOne({ tenantId: req.tenant.id, email });
 
         if (existing) {
-            pendingRegistrations.delete(email);
+            pendingRegistrations.delete(tenantKey(req.tenant.id, email));
             return res.status(409).json({
                 message: "This email is already registered. Please login."
             });
         }
 
         const referrer = pending.payload.referralCode
-            ? await PortalUser.findOne({ referralCode: pending.payload.referralCode })
+            ? await PortalUser.findOne({ tenantId: req.tenant.id, referralCode: pending.payload.referralCode })
             : null;
 
         if (pending.payload.referralCode && !referrer) {
-            pendingRegistrations.delete(email);
+            pendingRegistrations.delete(tenantKey(req.tenant.id, email));
             return res.status(400).json({
                 message: "Invalid referral code."
             });
         }
 
         await PortalUser.create({
+            tenantId: req.tenant.id,
             name: pending.payload.name,
             email: pending.payload.email,
             passwordHash: hashPassword(pending.payload.password),
             role: "USER",
-            referralCode: await generateReferralCode(),
+            referralCode: await generateReferralCode(req.tenant.id),
             referredByCode: referrer ? pending.payload.referralCode : null,
             referredByUserId: referrer?._id?.toString?.() || null,
             referredByName: referrer?.name || null,
             swapValue: pending.payload.swap
         });
-        pendingRegistrations.delete(email);
+        pendingRegistrations.delete(tenantKey(req.tenant.id, email));
 
         sendAccountCreatedEmail({
             to: pending.payload.email,
             name: pending.payload.name,
-            portalUrl: "https://nexfordmarket.com/login.html"
+            portalUrl: `https://${req.tenant.host}/login.html`,
+            tenantId: req.tenant.id
         }).catch((error) => {
             console.warn("Could not send account-created email:", error.message);
         });
@@ -496,14 +507,14 @@ export async function requestPasswordResetOtp(req, res) {
     }
 
     try {
-        const portalUser = await PortalUser.findOne({ email });
+        const portalUser = await PortalUser.findOne({ tenantId: req.tenant.id, email });
 
         if (!portalUser) {
             return res.status(404).json({ message: "No portal account found for this email." });
         }
 
         const otp = generateOtp();
-        pendingPasswordResets.set(email, {
+        pendingPasswordResets.set(tenantKey(req.tenant.id, email), {
             otpHash: hashOtp(otp),
             expiresAt: Date.now() + env.otpExpiresInMinutes * 60 * 1000,
             attempts: 0
@@ -512,7 +523,8 @@ export async function requestPasswordResetOtp(req, res) {
         await sendWelcomeOtpEmail({
             to: email,
             name: portalUser.name,
-            otp
+            otp,
+            tenantId: req.tenant.id
         });
 
         return res.json({
@@ -520,7 +532,7 @@ export async function requestPasswordResetOtp(req, res) {
             expiresInMinutes: env.otpExpiresInMinutes
         });
     } catch (error) {
-        pendingPasswordResets.delete(email);
+        pendingPasswordResets.delete(tenantKey(req.tenant.id, email));
         return res.status(500).json({
             message: error.message || "Could not send password reset OTP."
         });
@@ -540,14 +552,14 @@ export async function resetPassword(req, res) {
         return res.status(400).json({ message: "Password must be at least 12 characters." });
     }
 
-    const pending = pendingPasswordResets.get(email);
+    const pending = pendingPasswordResets.get(tenantKey(req.tenant.id, email));
 
     if (!pending) {
         return res.status(400).json({ message: "OTP expired or not requested. Please request a new OTP." });
     }
 
     if (Date.now() > pending.expiresAt) {
-        pendingPasswordResets.delete(email);
+        pendingPasswordResets.delete(tenantKey(req.tenant.id, email));
         return res.status(400).json({ message: "OTP expired. Please request a new OTP." });
     }
 
@@ -555,7 +567,7 @@ export async function resetPassword(req, res) {
         pending.attempts += 1;
 
         if (pending.attempts >= MAX_OTP_ATTEMPTS) {
-            pendingPasswordResets.delete(email);
+            pendingPasswordResets.delete(tenantKey(req.tenant.id, email));
             return res.status(429).json({
                 message: "Too many incorrect OTP attempts. Please request a new OTP."
             });
@@ -565,16 +577,16 @@ export async function resetPassword(req, res) {
     }
 
     try {
-        const portalUser = await PortalUser.findOne({ email });
+        const portalUser = await PortalUser.findOne({ tenantId: req.tenant.id, email });
 
         if (!portalUser) {
-            pendingPasswordResets.delete(email);
+            pendingPasswordResets.delete(tenantKey(req.tenant.id, email));
             return res.status(404).json({ message: "No portal account found for this email." });
         }
 
         portalUser.passwordHash = hashPassword(newPassword);
         await portalUser.save();
-        pendingPasswordResets.delete(email);
+        pendingPasswordResets.delete(tenantKey(req.tenant.id, email));
 
         return res.json({
             message: "Password reset successful. Please login with your new password."
@@ -599,7 +611,7 @@ export async function createTradingAccount(req, res) {
             return res.status(400).json({ message: "Password is required to create trading account." });
         }
 
-        const portalUser = await PortalUser.findById(req.portalUser.portalUserId);
+        const portalUser = await PortalUser.findOne({ _id: req.portalUser.portalUserId, tenantId: req.tenant.id });
 
         if (!portalUser) {
             return res.status(404).json({ message: "Portal user not found." });
@@ -610,6 +622,7 @@ export async function createTradingAccount(req, res) {
         }
 
         const existingAccount = await PortalTradingAccount.findOne({
+            tenantId: req.tenant.id,
             portalUserId: portalUser._id.toString(),
             accountType
         });
@@ -620,7 +633,7 @@ export async function createTradingAccount(req, res) {
 
         const springEmail = springEmailForAccount(portalUser.email, accountType);
         const referrerPortalUser = portalUser.referredByUserId
-            ? await PortalUser.findById(portalUser.referredByUserId)
+            ? await PortalUser.findOne({ _id: portalUser.referredByUserId, tenantId: req.tenant.id })
             : null;
         const springReferrerUserId = referrerPortalUser?.tradingUserId || null;
         const registeredUser = await registerUser({
@@ -633,10 +646,11 @@ export async function createTradingAccount(req, res) {
             swap: portalUser.swapValue,
             referralCode: springReferrerUserId ? portalUser.referredByCode : null,
             referredByUserId: springReferrerUserId
-        });
+        }, req.tenant.id);
 
         const user = registeredUser?.user || registeredUser || {};
         const createdAccount = await PortalTradingAccount.create({
+            tenantId: req.tenant.id,
             portalUserId: portalUser._id.toString(),
             tradingUserId: user.id,
             accountNumber: user.accountNumber,
@@ -671,14 +685,14 @@ export async function createTradingAccount(req, res) {
                 filters.push({ _id: new mongoose.Types.ObjectId(user.id) });
             }
             await collection.updateOne(
-                { $or: filters },
-                { $set: { balance: 5000, credit: 0, userId: user.id } },
+                { tenantId: req.tenant.id, $or: filters },
+                { $set: { tenantId: req.tenant.id, balance: 5000, credit: 0, userId: user.id } },
                 { upsert: true }
             );
         }
 
-        const springLogin = await login({ id: user.accountNumber, password });
-        const accounts = await getPortalAccounts(updatedPortalUser._id.toString());
+        const springLogin = await login({ id: user.accountNumber, password }, req.tenant.id);
+        const accounts = await getPortalAccounts(req.tenant.id, updatedPortalUser._id.toString());
 
         return res.status(201).json({
             message: accountType === "DEMO"
@@ -696,13 +710,13 @@ export async function createTradingAccount(req, res) {
 
 export async function listTradingAccounts(req, res) {
     try {
-        const portalUser = await PortalUser.findById(req.portalUser.portalUserId);
+        const portalUser = await PortalUser.findOne({ _id: req.portalUser.portalUserId, tenantId: req.tenant.id });
 
         if (!portalUser) {
             return res.status(404).json({ message: "Portal user not found." });
         }
 
-        const accounts = await getPortalAccounts(portalUser._id.toString());
+        const accounts = await getPortalAccounts(req.tenant.id, portalUser._id.toString());
         const selectedAccount = await getSelectedAccount(portalUser, accounts);
 
         return res.json({
@@ -723,7 +737,7 @@ export async function selectTradingAccount(req, res) {
             return res.status(400).json({ message: "accountId is required." });
         }
 
-        const portalUser = await PortalUser.findById(req.portalUser.portalUserId);
+        const portalUser = await PortalUser.findOne({ _id: req.portalUser.portalUserId, tenantId: req.tenant.id });
 
         if (!portalUser) {
             return res.status(404).json({ message: "Portal user not found." });
@@ -735,6 +749,7 @@ export async function selectTradingAccount(req, res) {
 
         const selectedAccount = await PortalTradingAccount.findOne({
             _id: accountId,
+            tenantId: req.tenant.id,
             portalUserId: portalUser._id.toString()
         });
 
@@ -751,8 +766,8 @@ export async function selectTradingAccount(req, res) {
         portalUser.isBlocked = selectedAccount.isBlocked;
         await portalUser.save();
 
-        const springLogin = await login({ id: selectedAccount.accountNumber, password });
-        const accounts = await getPortalAccounts(portalUser._id.toString());
+        const springLogin = await login({ id: selectedAccount.accountNumber, password }, req.tenant.id);
+        const accounts = await getPortalAccounts(req.tenant.id, portalUser._id.toString());
 
         return res.json({
             message: `${selectedAccount.accountType} account selected.`,

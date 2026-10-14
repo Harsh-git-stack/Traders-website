@@ -2,10 +2,10 @@ import mongoose from "mongoose";
 
 const walletBalanceSchema = new mongoose.Schema(
     {
+        tenantId: { type: String, required: true, index: true },
         userId: {
             type: String,
             required: true,
-            unique: true,
             index: true
         },
         accountNumber: {
@@ -31,5 +31,7 @@ const walletBalanceSchema = new mongoose.Schema(
         collection: "wallet_balances"
     }
 );
+
+walletBalanceSchema.index({ tenantId: 1, userId: 1 }, { unique: true });
 
 export const WalletBalance = mongoose.model("WalletBalance", walletBalanceSchema);

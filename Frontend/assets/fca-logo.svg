@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="120" viewBox="0 0 320 120" role="img" aria-labelledby="title description">
+  <title id="title">Financial Conduct Authority</title>
+  <desc id="description">FCA wordmark</desc>
+  <rect width="320" height="120" fill="#ffffff"/>
+  <g fill="#86174d">
+    <path d="M18 25h77v18H42v15h46v18H42v29H18z"/>
+    <path d="M112 25h23l38 80h-26l-7-17h-34l-7 17H74zm11 25-10 24h20z"/>
+    <path d="M175 65c0-25 17-42 42-42 14 0 26 6 34 17l-18 13c-4-6-10-9-16-9-11 0-19 9-19 21s8 21 19 21c6 0 12-3 16-9l18 13c-8 11-20 17-34 17-25 0-42-17-42-42z"/>
+  </g>
+  <g fill="#86174d" font-family="Arial, Helvetica, sans-serif" font-weight="700">
+    <text x="188" y="43" font-size="20">FINANCIAL</text>
+    <text x="188" y="67" font-size="20">CONDUCT</text>
+    <text x="188" y="91" font-size="20">AUTHORITY</text>
+  </g>
+</svg>

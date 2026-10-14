@@ -6,7 +6,7 @@ function userBalanceCollection() {
     return mongoose.connection.collection("user_balances");
 }
 
-function userBalanceFilter(userId) {
+function userBalanceFilter(userId, tenantId) {
     const filters = [
         { _id: userId },
         { userId }
@@ -16,7 +16,7 @@ function userBalanceFilter(userId) {
         filters.push({ _id: new mongoose.Types.ObjectId(userId) });
     }
 
-    return { $or: filters };
+    return { tenantId, $or: filters };
 }
 
 function normalizeTradingBalance(doc) {
@@ -28,10 +28,11 @@ function normalizeTradingBalance(doc) {
 
 async function getOrCreateWallet(user) {
     const walletUserId = user.portalUserId || user.id;
-    const existing = await WalletBalance.findOne({ userId: walletUserId });
+    const existing = await WalletBalance.findOne({ tenantId: user.tenantId, userId: walletUserId });
     if (existing) return existing;
 
     return WalletBalance.create({
+        tenantId: user.tenantId,
         userId: walletUserId,
         accountNumber: user.accountNumber,
         email: user.email,
@@ -42,11 +43,12 @@ async function getOrCreateWallet(user) {
 
 async function getOrCreateTradingBalance(user) {
     const collection = userBalanceCollection();
-    const existing = await collection.findOne(userBalanceFilter(user.id));
+    const existing = await collection.findOne(userBalanceFilter(user.id, user.tenantId));
     if (existing) return normalizeTradingBalance(existing);
 
     const inserted = {
         _id: user.id,
+        tenantId: user.tenantId,
         userId: user.id,
         balance: 0,
         credit: 0
@@ -86,7 +88,7 @@ export async function getWalletSummary(req, res) {
 
 export async function listTransfers(req, res) {
     try {
-        const transfers = await Transfer.find({ userId: req.portalUser.portalUserId || req.portalUser.id })
+        const transfers = await Transfer.find({ tenantId: req.tenant.id, userId: req.portalUser.portalUserId || req.portalUser.id })
             .sort({ createdAt: -1 })
             .limit(50)
             .lean();
@@ -125,7 +127,7 @@ export async function createTransfer(req, res) {
 
         if (type === "WALLET_TO_TRADING") {
             wallet = await WalletBalance.findOneAndUpdate(
-                { userId: req.portalUser.portalUserId || req.portalUser.id, balance: { $gte: amount } },
+                { tenantId: req.tenant.id, userId: req.portalUser.portalUserId || req.portalUser.id, balance: { $gte: amount } },
                 { $inc: { balance: -amount } },
                 { new: true }
             );
@@ -136,22 +138,22 @@ export async function createTransfer(req, res) {
 
             try {
                 trading = await collection.findOneAndUpdate(
-                    userBalanceFilter(req.portalUser.id),
+                    userBalanceFilter(req.portalUser.id, req.tenant.id),
                     {
                         $inc: { balance: amount },
-                        $setOnInsert: { userId: req.portalUser.id, credit: 0 }
+                        $setOnInsert: { tenantId: req.tenant.id, userId: req.portalUser.id, credit: 0 }
                     },
                     { upsert: true, returnDocument: "after" }
                 );
             } catch (error) {
-                await WalletBalance.updateOne({ userId: req.portalUser.portalUserId || req.portalUser.id }, { $inc: { balance: amount } });
+                await WalletBalance.updateOne({ tenantId: req.tenant.id, userId: req.portalUser.portalUserId || req.portalUser.id }, { $inc: { balance: amount } });
                 throw error;
             }
         } else {
             trading = await collection.findOneAndUpdate(
                 {
                     $and: [
-                        userBalanceFilter(req.portalUser.id),
+                        userBalanceFilter(req.portalUser.id, req.tenant.id),
                         { balance: { $gte: amount } }
                     ]
                 },
@@ -165,10 +167,11 @@ export async function createTransfer(req, res) {
 
             try {
                 wallet = await WalletBalance.findOneAndUpdate(
-                    { userId: req.portalUser.portalUserId || req.portalUser.id },
+                    { tenantId: req.tenant.id, userId: req.portalUser.portalUserId || req.portalUser.id },
                     {
                         $inc: { balance: amount },
                         $setOnInsert: {
+                            tenantId: req.tenant.id,
                             accountNumber: req.portalUser.accountNumber,
                             email: req.portalUser.email,
                             currency: "USD"
@@ -177,13 +180,14 @@ export async function createTransfer(req, res) {
                     { new: true, upsert: true }
                 );
             } catch (error) {
-                await collection.updateOne(userBalanceFilter(req.portalUser.id), { $inc: { balance: amount } });
+                await collection.updateOne(userBalanceFilter(req.portalUser.id, req.tenant.id), { $inc: { balance: amount } });
                 throw error;
             }
         }
 
         const tradingBalance = normalizeTradingBalance(trading);
         const transfer = await Transfer.create({
+            tenantId: req.tenant.id,
             userId: req.portalUser.portalUserId || req.portalUser.id,
             accountNumber: req.portalUser.accountNumber,
             email: req.portalUser.email,

@@ -1,9 +1,9 @@
-const API_BASE_URL = window.NEXFORD_API_BASE_URL ||
+const API_BASE_URL = window.TRADE4WORLDFX_API_BASE_URL ||
   (["localhost", "127.0.0.1"].includes(window.location.hostname)
     ? "http://localhost:4000"
     : window.location.origin);
-const TOKEN_KEY = "nexford-access-token";
-const USER_KEY = "nexford-user";
+const TOKEN_KEY = "trade4worldfx-access-token";
+const USER_KEY = "trade4worldfx-user";
 
 const api = {
   register: "/api/auth/register",
@@ -549,6 +549,7 @@ function renderProfile(user) {
   document.querySelector("#profileMobile") && (document.querySelector("#profileMobile").textContent = user.phone || user.mobile || "-");
   document.querySelector("#profileEmail").textContent = user.email || "-";
   document.querySelector("#upiDepositEmail") && (document.querySelector("#upiDepositEmail").value = user.email || "");
+  document.querySelector("#bankTransferDepositEmail") && (document.querySelector("#bankTransferDepositEmail").value = user.email || "");
   document.querySelector("#withdrawEmail") && (document.querySelector("#withdrawEmail").value = user.email || "");
   document.querySelector("#withdrawTradingAccountNumber") && (document.querySelector("#withdrawTradingAccountNumber").value = user.accountNumber || "");
   document.querySelector("#upiAutoEmail") && (document.querySelector("#upiAutoEmail").value = user.email || "");
@@ -977,11 +978,11 @@ async function submitDepositRequest(event) {
     return;
   }
 
-  const isUpiDeposit = requestName === "UPI Deposit";
+  const isBankTransferDeposit = requestName === "Bank Transfer Deposit";
   const isOnlineBankWithdraw = requestName === "Online Bank Withdraw";
 
-  if (!isUpiDeposit && !isOnlineBankWithdraw) {
-    showMessage("Only UPI deposits and online bank withdrawals are available right now.");
+  if (!isBankTransferDeposit && !isOnlineBankWithdraw) {
+    showMessage("Only bank-transfer deposits and online bank withdrawals are available right now.");
     return;
   }
 
@@ -1006,14 +1007,18 @@ async function submitDepositRequest(event) {
       }
     : {
         type: "DEPOSIT",
-        method: "UPI",
+        method: "BANK_TRANSFER",
         amount,
         utr: String(payload.utr || "").trim(),
         payerName: String(payload.payerName || "").trim(),
         phone: String(payload.phone || "").trim(),
         email: String(payload.email || "").trim(),
-        payload: {
-        }
+          payload: {
+            bankName: "HDFC Bank",
+            beneficiary: "KUNAL NITIN GIRI",
+            accountNumber: "50100599236752",
+            ifscCode: "HDFC0006184"
+          }
       };
 
   try {

@@ -2,9 +2,17 @@ import mongoose from "mongoose";
 
 const clientRequestSchema = new mongoose.Schema(
     {
+        tenantId: { type: String, required: true, index: true },
         userId: {
             type: String,
             required: true,
+            index: true
+        },
+        // The portal profile owns the cash wallet. userId above identifies the
+        // selected trading account and is intentionally kept for core services.
+        portalUserId: {
+            type: String,
+            default: null,
             index: true
         },
         accountNumber: {
@@ -71,5 +79,8 @@ const clientRequestSchema = new mongoose.Schema(
         collection: "client_requests"
     }
 );
+
+clientRequestSchema.index({ tenantId: 1, userId: 1, createdAt: -1 });
+clientRequestSchema.index({ tenantId: 1, portalUserId: 1, createdAt: -1 });
 
 export const ClientRequest = mongoose.model("ClientRequest", clientRequestSchema);

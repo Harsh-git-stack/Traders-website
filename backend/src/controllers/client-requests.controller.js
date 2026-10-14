@@ -36,7 +36,11 @@ export async function createClientRequest(req, res) {
         }
 
         const numericAmount = Number(amount);
+        // userId remains the trading-account identity. The Spring manager uses it
+        // for referral rewards and account-level checks. portalUserId is the
+        // separate portal-wallet identity used when a deposit is approved.
         const requestUserId = req.portalUser.id || req.portalUser.portalUserId;
+        const portalUserId = req.portalUser.portalUserId || req.portalUser.id;
 
         if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
             return res.status(400).json({
@@ -89,7 +93,7 @@ export async function createClientRequest(req, res) {
                 });
             }
 
-            const reward = await RewardBalance.findOne({ userId: requestUserId });
+            const reward = await RewardBalance.findOne({ tenantId: req.tenant.id, userId: requestUserId });
             const available = Number(reward?.balance || 0);
 
             if (available < numericAmount) {
@@ -100,7 +104,9 @@ export async function createClientRequest(req, res) {
         }
 
         const request = await ClientRequest.create({
+            tenantId: req.tenant.id,
             userId: requestUserId,
+            portalUserId,
             accountNumber: req.portalUser.accountNumber,
             email: email || req.portalUser.email,
             type: normalizedType,
@@ -136,6 +142,7 @@ export async function getMyClientRequests(req, res) {
             req.portalUser.portalUserId
         ].filter(Boolean)));
         const requests = await ClientRequest.find({
+            tenantId: req.tenant.id,
             userId: { $in: userIds }
         })
             .sort({ createdAt: -1 })
@@ -155,7 +162,7 @@ export async function getMyClientRequests(req, res) {
 export async function getRewardSummary(req, res) {
     try {
         const reward = req.portalUser.id
-            ? await RewardBalance.findOne({ userId: req.portalUser.id }).lean()
+            ? await RewardBalance.findOne({ tenantId: req.tenant.id, userId: req.portalUser.id }).lean()
             : null;
 
         return res.json({
@@ -177,9 +184,9 @@ export async function getReferralSummary(req, res) {
     try {
         const portalUserId = req.portalUser.portalUserId;
         const currentUser = portalUserId
-            ? await PortalUser.findById(portalUserId).lean()
+            ? await PortalUser.findOne({ _id: portalUserId, tenantId: req.tenant.id }).lean()
             : null;
-        const referredUsers = await PortalUser.find({ referredByUserId: portalUserId })
+        const referredUsers = await PortalUser.find({ tenantId: req.tenant.id, referredByUserId: portalUserId })
             .sort({ createdAt: -1 })
             .lean();
 
@@ -191,6 +198,7 @@ export async function getReferralSummary(req, res) {
             ].filter(Boolean)));
 
             const requests = await ClientRequest.find({
+                tenantId: req.tenant.id,
                 userId: { $in: userIds },
                 type: { $in: ["DEPOSIT", "WITHDRAWAL"] }
             })

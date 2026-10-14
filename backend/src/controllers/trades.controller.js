@@ -2,7 +2,7 @@ import { springGet } from "../services/spring.service.js";
 
 export async function getAccount(req, res) {
     try {
-        const account = await springGet("/trades/account", req.portalUser.traderToken);
+        const account = await springGet("/trades/account", req.portalUser.traderToken, req.tenant.id);
         return res.json(account);
     } catch (error) {
         return res.status(error.response?.status || 500).json({
@@ -13,7 +13,7 @@ export async function getAccount(req, res) {
 
 export async function getTrades(req, res) {
     try {
-        const trades = await springGet("/trades", req.portalUser.traderToken);
+        const trades = await springGet("/trades", req.portalUser.traderToken, req.tenant.id);
         return res.json(trades);
     } catch (error) {
         return res.status(error.response?.status || 500).json({

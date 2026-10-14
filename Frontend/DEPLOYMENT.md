@@ -1,4 +1,4 @@
-# NexfordMarket Deployment
+# Trade4WorldFX Deployment
 
 This project is a static frontend served by a small Node.js server. There is no build step and no npm dependency install is required.
 
@@ -67,7 +67,7 @@ If your backend is on a different domain or path, define this before loading `au
 
 ```html
 <script>
-  window.NEXFORD_API_BASE_URL = "https://api.your-domain.com/traders-backend";
+  window.TRADE4WORLDFX_API_BASE_URL = "https://api.your-domain.com";
 </script>
 <script src="auth.js"></script>
 ```

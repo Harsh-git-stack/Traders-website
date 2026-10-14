@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const transferSchema = new mongoose.Schema(
     {
+        tenantId: { type: String, required: true, index: true },
         userId: {
             type: String,
             required: true,
@@ -56,5 +57,7 @@ const transferSchema = new mongoose.Schema(
         collection: "transfers"
     }
 );
+
+transferSchema.index({ tenantId: 1, userId: 1, createdAt: -1 });
 
 export const Transfer = mongoose.model("Transfer", transferSchema);

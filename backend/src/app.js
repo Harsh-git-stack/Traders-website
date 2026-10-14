@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import { env } from "./config/env.js";
 import authRoutes from "./routes/auth.routes.js";
 import { requirePortalAuth } from "./middleware/auth.middleware.js";
+import { resolveTenant } from "./middleware/tenant.middleware.js";
 import tradesRoutes from "./routes/trades.routes.js";
 import clientRequestRoutes from "./routes/client-requests.routes.js";
 import transferRoutes from "./routes/transfers.routes.js";
@@ -17,7 +18,13 @@ export const app = express();
 app.use(helmet());
 
 app.use(cors({
-    origin: env.frontendOrigin,
+    origin(origin, callback) {
+        if (!origin) return callback(null, true);
+        try {
+            const host = new URL(origin).hostname.toLowerCase();
+            return callback(null, env.tenantDomains.has(host) || origin === env.frontendOrigin);
+        } catch { return callback(null, false); }
+    },
     credentials: true
 }));
 
@@ -28,14 +35,16 @@ app.use(morgan("dev"));
 app.get("/health", (req, res) => {
     res.json({
         ok: true,
-        service: "nexford-backend"
+        service: "trading-portal-backend"
     });
 });
+
+app.use(resolveTenant);
 
 app.get("/api/health", (req, res) => {
     res.json({
         ok: true,
-        service: "nexford-backend"
+        service: "trading-portal-backend"
     });
 });
 

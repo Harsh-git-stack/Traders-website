@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 
 const portalUserSchema = new mongoose.Schema(
     {
+        tenantId: {
+            type: String,
+            required: true,
+            index: true
+        },
         name: {
             type: String,
             required: true,
@@ -10,7 +15,6 @@ const portalUserSchema = new mongoose.Schema(
         email: {
             type: String,
             required: true,
-            unique: true,
             lowercase: true,
             trim: true,
             index: true
@@ -54,7 +58,6 @@ const portalUserSchema = new mongoose.Schema(
             type: String,
             trim: true,
             uppercase: true,
-            unique: true,
             sparse: true,
             index: true
         },
@@ -88,6 +91,12 @@ const portalUserSchema = new mongoose.Schema(
         timestamps: true,
         collection: "portal_users"
     }
+);
+
+portalUserSchema.index({ tenantId: 1, email: 1 }, { unique: true });
+portalUserSchema.index(
+    { tenantId: 1, referralCode: 1 },
+    { unique: true, partialFilterExpression: { referralCode: { $type: "string" } } }
 );
 
 export const PortalUser = mongoose.model("PortalUser", portalUserSchema);

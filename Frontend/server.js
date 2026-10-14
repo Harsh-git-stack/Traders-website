@@ -113,6 +113,6 @@ function findFreePort(port) {
 
 findFreePort(START_PORT).then((port) => {
   server.listen(port, () => {
-    console.log(`NexfordMarket frontend running at http://localhost:${port}`);
+    console.log(`Trade4WorldFX frontend running at http://localhost:${port}`);
   });
 });

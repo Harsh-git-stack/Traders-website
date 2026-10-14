@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "migrate:portal-tenant:nexford": "node src/scripts/backfill-portal-tenant.mjs",
+    "migrate:wallet-identity": "node src/scripts/migrate-wallet-identity.mjs"
   },
   "dependencies": {
     "axios": "^1.7.9",

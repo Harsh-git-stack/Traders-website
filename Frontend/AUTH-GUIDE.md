@@ -1,4 +1,4 @@
-# NexfordMarket Auth Frontend Connection Guide
+# Trade4WorldFX Auth Frontend Connection Guide
 
 The demo backend that was created earlier has been removed.
 

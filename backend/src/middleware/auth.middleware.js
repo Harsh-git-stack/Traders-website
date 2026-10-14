@@ -14,6 +14,9 @@ export function requirePortalAuth(req, res, next) {
 
     try {
         const payload = jwt.verify(token, env.portalJwtSecret);
+        if (!payload.tenantId || payload.tenantId !== req.tenant?.id) {
+            return res.status(403).json({ message: "Session does not belong to this portal." });
+        }
         req.portalUser = {
             id: payload.sub,
             portalUserId: payload.portalUserId,
@@ -23,6 +26,7 @@ export function requirePortalAuth(req, res, next) {
             accountNumber: payload.accountNumber,
             email: payload.email,
             referredByName: payload.referredByName,
+            tenantId: payload.tenantId,
             hasTradingAccount: Boolean(payload.traderToken && payload.accountNumber)
         };
 

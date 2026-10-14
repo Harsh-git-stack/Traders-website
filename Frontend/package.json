@@ -1,8 +1,8 @@
 {
-  "name": "nexfordmarket-frontend",
+  "name": "trade4worldfx-frontend",
   "version": "1.0.0",
   "private": true,
-  "description": "Static frontend server for the NexfordMarket traders website.",
+  "description": "Static frontend server for the Trade4WorldFX traders website.",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js"
